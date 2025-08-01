@@ -3,9 +3,10 @@ import ishares_ETF_list as ishares
 import pandas as pd
 from ishares_ETF_list import download_valid_data
 
-def calculate_max_drawdown(user_max_drawdown):
-    valid_tickers, data = download_valid_data()
+def calculate_max_drawdown(user_max_drawdown, valid_tickers, data):
     tickers_within_user_drawdown_tolerance = []
+
+    # FILTER FOR User's want of historical data
 
     for ticker in valid_tickers:
         if 'Close' not in data[ticker]:

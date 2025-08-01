@@ -18,6 +18,7 @@ def getUserProfile():
     desired_growth_options = [2, 4, 6, 8, 11]
     fluctuation_options = [1, 3, 5, 8, 100]
     worse_case_options = [15, 25, 35, 45, 100]
+    minimum_etf_age = [10, 5, 3, 0]
 
     print("\nHello and welcome to ETF Navigator!\nPlease answer the following questions...")
 
@@ -43,5 +44,11 @@ def getUserProfile():
         '\n4. In the worst case, what is the greatest loss you could tolerate? (1/2/3/4/5):\n'
         '\t1) Low (<15%)\n\t2) Minor (<25%)\n\t3) Moderate (<35%)\n\t4) High (<45%)\n\t5) Very high (>45%)\n',
         worse_case_options)
+    
+    user_minimum_efs_age = get_choice(
+        '\n5. What is the minimum amount of time you would like the ETF to have existed for? (The older the ETF the more reliable the range of data) (1/2/3/4/5):\n'
+        '\t1) Very Established (>10 years)\n\t2) Experienced some variation (>5%)\n\t3) Newer is okay (<3 years)\n\t4) I don\'t mind less data (0 years)\n',
+        minimum_etf_age)
+    
 
-    return [user_time_horizon, user_desired_growth, user_fluctuation, user_worst_case]
+    return [user_time_horizon, user_desired_growth, user_fluctuation, user_worst_case, user_minimum_efs_age]

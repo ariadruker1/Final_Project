@@ -7,7 +7,7 @@ ETFs = ["SVR.TO", "IBIT.TO", "CGL.TO", "XMV.TO", "XMI.TO", "XML.TO", "XIN.TO", "
         "XMA.TO", "XUSC.TO", "XSMH.TO", "XFH.TO", "XIT.TO", "XFN.TO", "XMTM.TO", "XBM.TO", "XEI.TO", "XVLU.TO", "XMD.TO", "XUT.TO", "XCSR.TO", "XPF.TO", "XHU.TO", "XGD.TO", "XSPC.TO", "XUH.TO", "XCS.TO", "XHD.TO", "CLU.TO", "XMW.TO", "XSC.TO", "XSE.TO", "CMR.TO", "CLG.TO", "CBH.TO", "CLF.TO", "CBO.TO", "XGGB.TO", "CVD.TO", "XQB.TO", "XAGG.TO", "XCBG.TO", "XSHG.TO", "XAGH.TO", "XSTB.TO", "XFLB.TO", "XFLI.TO", "XFLX.TO", "XSAB.TO", "XTLH.TO", "XTLT.TO", "XFR.TO", "XGB.TO", "XCB.TO", "XSB.TO", "XSI.TO", "XRB.TO", "XLB.TO", "XHB.TO", "XBB.TO", "XSH.TO", "XSTH.TO", "XSTP.TO", "XCBU.TO", "XIGS.TO", "XSHU.TO", "XEB.TO", "XIG.TO", "XHY.TO", "GCNS.TO", "GGRO.TO", "GEQT.TO", "GBAL.TO", "XGRO.TO", "XBAL.TO", "FIE.TO", "XTR.TO", "XCNS.TO", "XEQT.TO", "XINC.TO", "CGR.TO", "XRE.TO"]
 
 
-def get_etf_data(symbols, years):
+def get_etf_data(symbols, years, tickers, data):
     """
     Get annual growth and standard deviation for multiple time periods for all ETFs
 
@@ -19,21 +19,29 @@ def get_etf_data(symbols, years):
         pd.DataFrame: DataFrame with all metrics
     """
     end_date = datetime.now()  # years
+    start_date = end_date - timedelta(days=365 * years)
     results = []
 
     print(f"Processing {len(symbols)} ETFs...")
 
-    for i, symbol in enumerate(symbols):
-        row = {'Symbol': symbol}
+    # for i, symbol in enumerate(symbols):
+    #     row = {'Symbol': symbol}
 
-        ticker = yf.Ticker(symbol)
+    #     ticker = yf.Ticker(symbol)
 
         # Calculate start date
-        start_date = end_date - timedelta(days=365 * years)
-        data = ticker.history(start=start_date.strftime('%Y-%m-%d'),
-                              end=end_date.strftime('%Y-%m-%d'))
+    for ticker in tickers:
+        row = {'Symbol': ticker}
 
         try:
+            df = data[ticker]
+            prices = df['Close'].dropna()
+            prices = prices[(prices.index >= start_date) & (prices.index <= end_date)]
+            print(data[ticker]['Close'].dropna().tail())
+            print(len(data[ticker]['Close'].dropna()))
+    # # data = ticker.history(start=start_date.strftime('%Y-%m-%d'),
+    #                           end=end_date.strftime('%Y-%m-%d'))
+
             # calculate annual growth
             start_price = data['Close'].iloc[0]
             end_price = data['Close'].iloc[-1]
