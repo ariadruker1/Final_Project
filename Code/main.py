@@ -7,9 +7,7 @@ import user_profile as up
 import max_drawdown as md
 
 def main():
-    # user = up.getUserProfile()
-    md.calculate_max_drawdown("XIT", 1, 4)
-    # for i in ishares.ETFs:
-    #     md.calculate_max_drawdown(i, user[0], user[3])
-
+    user = up.getUserProfile()
+    md_tolerable_list = md.calculate_max_drawdown(user[3])
+    print(md_tolerable_list)
 main()
