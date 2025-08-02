@@ -41,14 +41,14 @@ def get_etf_data(symbols, years, tickers, data):
     #                           end=end_date.strftime('%Y-%m-%d'))
 
             # calculate annual growth
-            start_price = data['Close'].iloc[0]
-            end_price = data['Close'].iloc[-1]
+            start_price = prices.iloc[0]
+            end_price = prices.iloc[-1]
 
             annual_growth = ((end_price / start_price) - 1) * 100 / years
             annual_growth = round(annual_growth, 2)
 
             # calculate annual standard deviation
-            daily_returns = data['Close'].pct_change().dropna()
+            daily_returns = prices.pct_change().dropna()
             annual_std = daily_returns.std() * np.sqrt(252) * 100
             annual_std = round(annual_std, 2)
 

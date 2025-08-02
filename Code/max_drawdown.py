@@ -5,8 +5,6 @@ from datetime import datetime
 def calculate_max_drawdown(user_max_drawdown, user_minimum_efs_age, valid_tickers, data, end_date):
     tickers_within_user_drawdown_tolerance = []
 
-    # FILTER FOR User's want of historical data
-
     for ticker in valid_tickers:
         if 'Close' not in data[ticker]:
             continue
