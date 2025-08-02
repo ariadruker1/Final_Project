@@ -14,6 +14,10 @@ def main():
     valid_tickers, data = download_valid_data()
     end_date = pd.Timestamp(datetime.now())
     md_tolerable_list = md.calculate_max_drawdown(user[3], user[4], valid_tickers, data, end_date)
-    annual_data = get_etf_data(valid_tickers, user[0], md_tolerable_list, data)
+
+    annual_data = get_etf_data(md_tolerable_list, user[0], data)
     print(annual_data)
+
+
+
 main()
