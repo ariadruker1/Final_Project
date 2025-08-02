@@ -37,9 +37,7 @@ def get_etf_data(symbols, years, tickers, data):
             df = data[ticker]
             prices = df['Close'].dropna()
             prices = prices[(prices.index >= start_date) & (prices.index <= end_date)]
-            print(data[ticker]['Close'].dropna().tail())
-            print(len(data[ticker]['Close'].dropna()))
-    # # data = ticker.history(start=start_date.strftime('%Y-%m-%d'),
+    # data = ticker.history(start=start_date.strftime('%Y-%m-%d'),
     #                           end=end_date.strftime('%Y-%m-%d'))
 
             # calculate annual growth
