@@ -1,9 +1,8 @@
-import yfinance as yf
-import ishares_ETF_list as ishares
 import pandas as pd
 from ishares_ETF_list import download_valid_data
+from datetime import datetime
 
-def calculate_max_drawdown(user_max_drawdown, valid_tickers, data):
+def calculate_max_drawdown(user_max_drawdown, user_minimum_efs_age, valid_tickers, data, end_date):
     tickers_within_user_drawdown_tolerance = []
 
     # FILTER FOR User's want of historical data
@@ -13,7 +12,6 @@ def calculate_max_drawdown(user_max_drawdown, valid_tickers, data):
             continue
 
         prices = data[ticker]['Close'].dropna()
-        end_date = pd.Timestamp("2025-07-31")
         past_10_year_date = end_date - pd.DateOffset(years=10)
 
         prices_origin = prices[prices.index <= end_date]
@@ -42,7 +40,8 @@ def calculate_max_drawdown(user_max_drawdown, valid_tickers, data):
         else:
             continue 
 
-        if max_drawdown >= -user_max_drawdown:
+        minimum_age_etf = datetime.now() - pd.DateOffset(years=user_minimum_efs_age)
+        if max_drawdown >= -user_max_drawdown and prices.index.min() < minimum_age_etf:
             tickers_within_user_drawdown_tolerance.append(ticker)
 
     return tickers_within_user_drawdown_tolerance
