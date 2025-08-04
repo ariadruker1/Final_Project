@@ -29,24 +29,24 @@ def get_etf_data(tickers, time_horizon, all_data):
                 annual_growth, annual_std = None, None
             else:
                 # Get data for this specific ticker
-                ticker_data = period_data[(ticker, 'Close')].dropna()
+                ticker_data = period_data[(ticker, 'Adj Close')].dropna()
 
                 if len(ticker_data) < 2:
                     annual_growth, annual_std = None, None
                 else:
-                    # Find the price closest to start_date (N years ago)
-                    start_idx = ticker_data.index.get_indexer(
-                        [start_date], method='nearest')[0]
-                    start_price = ticker_data.iloc[start_idx]
+                    # Find the start and end price to calculate compound annual growth rate
+                    start_price = ticker_data.iloc[0]
                     end_price = ticker_data.iloc[-1]
+                    actual_days = (ticker_data.index[-1] - ticker_data.index[0]).days
+                    actual_years = actual_days / 365.25
 
-                    annual_growth = (
-                        (end_price / start_price) - 1) * 100 / time_horizon
-                    annual_growth = round(annual_growth, 2)
+                    annual_growth = ((end_price / start_price) ** (1 / actual_years) - 1) * 100
+            
 
                     # calculate annual standard deviation
                     daily_returns = ticker_data.pct_change().dropna()
-                    annual_std = daily_returns.std() * np.sqrt(252) * 100
+                    annual_std_1y = daily_returns.std() * np.sqrt(252) * 100
+                    annual_std = annual_std_1y / np.sqrt(actual_years)
                     annual_std = round(annual_std, 2)
         except:
             annual_growth, annual_std = None, None
