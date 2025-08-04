@@ -16,7 +16,7 @@ def get_choice(prompt, options):
 def getUserProfile():
     time_horizon_options = [1, 4, 8, 15, 25]
     desired_growth_options = [2, 4, 6, 8, 11]
-    fluctuation_options = [1, 3, 5, 8, 100]
+    fluctuation_options = [5, 10, 15, 20, 100]
     worse_case_options = [15, 25, 35, 45, 100]
     minimum_etf_age = [10, 5, 3, 1, 0]
 
@@ -35,9 +35,9 @@ def getUserProfile():
 
     user_fluctuation = get_choice(
         '\n3. How much daily fluctuation is okay with you? (1/2/3/4/5):\n'
-        '\t1) Not much at all (<1%)\n\t2) Small ups and downs are okay (2-3%)\n'
-        '\t3) Regular market swings (4-5%)\n\t4) I can handle large moves if it promotes growth (6-8%)\n'
-        '\t5) Volatility doesn\'t bother me (>8%)\n',
+        '\t1) Not much at all (<5%)\n\t2) Small ups and downs are okay (<10%)\n'
+        '\t3) Regular market swings (<15%)\n\t4) I can handle large moves if it promotes growth (<20%)\n'
+        '\t5) Volatility doesn\'t bother me (<20%)\n',
         fluctuation_options)
 
     user_worst_case = get_choice(
