@@ -3,18 +3,18 @@ import numpy as np
 from datetime import datetime, timedelta
 
 
-def get_etf_data(tickers, years, all_data):
+def get_etf_data(tickers, time_horizon, all_data):
     """
     Get annual growth and standard deviation for multiple time periods for all ETFs
     Args:
     tickers (list): List of ETF tickers to analyze
-    years (int): Number of years ago to calculate metrics
+    time_horizon (int): Number of years to calculate metrics
     all_data (pd.DataFrame): DataFrame containing all-time data for all ETFs
     Returns:
     pd.DataFrame: DataFrame with annual growth and standard deviation for each ETF
     """
     end_date = datetime.now()
-    start_date = end_date - timedelta(days=365 * years)
+    start_date = end_date - timedelta(days=365 * time_horizon)
     results = []
     print(f"Processing {len(tickers)} ETFs...")
 
@@ -41,7 +41,7 @@ def get_etf_data(tickers, years, all_data):
                     end_price = ticker_data.iloc[-1]
 
                     annual_growth = (
-                        (end_price / start_price) - 1) * 100 / years
+                        (end_price / start_price) - 1) * 100 / time_horizon
                     annual_growth = round(annual_growth, 2)
 
                     # calculate annual standard deviation
@@ -51,8 +51,8 @@ def get_etf_data(tickers, years, all_data):
         except:
             annual_growth, annual_std = None, None
 
-        row[f'Annual_Growth_{years}Y'] = annual_growth
-        row[f'Standard_Deviation_{years}Y'] = annual_std
+        row[f'Annual_Growth_{time_horizon}Y'] = annual_growth
+        row[f'Standard_Deviation_{time_horizon}Y'] = annual_std
         results.append(row)
 
     return pd.DataFrame(results)
