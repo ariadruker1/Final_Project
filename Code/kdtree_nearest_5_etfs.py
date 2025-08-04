@@ -8,13 +8,13 @@ def kdtree_nearest_5_etfs(user_growth, user_std, df, time_horizon, k):
     growth_col = f'Annual_Growth_{time_horizon}Y'
 
     df_clean = df.dropna(subset=[std_col, growth_col])
-
+    print(f"Number of valid ETFs after dropping NaNs: {len(df_clean)}")
     df_clean['_std_flipped'] = -df_clean[std_col]
     df_clean['_growth'] = df_clean[growth_col]
     std_growth_data = df_clean[['_std_flipped', '_growth']].to_numpy()
     scaler = StandardScaler()
     std_growth_data_scaled = scaler.fit_transform(std_growth_data)
-    user_point_scaled = scaler.transform([[user_std, user_growth]])
+    user_point_scaled = scaler.transform([[-user_std, user_growth]])
 
     tree = KDTree(std_growth_data_scaled, leaf_size=20)
     k_actual = min(k, len(df_clean))
