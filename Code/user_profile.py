@@ -34,7 +34,7 @@ def getUserProfile():
         desired_growth_options)
 
     user_fluctuation = get_choice(
-        '\n3. How much daily fluctuation is okay with you? (1/2/3/4/5):\n'
+        '\n3. How much annual fluctuation is okay with you? (1/2/3/4/5):\n'
         '\t1) Not much at all (<5%)\n\t2) Small ups and downs are okay (<10%)\n'
         '\t3) Regular market swings (<15%)\n\t4) I can handle large moves if it promotes growth (<20%)\n'
         '\t5) Volatility doesn\'t bother me (<20%)\n',
