@@ -9,11 +9,11 @@ def download_valid_data():
     valid_tickers = []
     for ticker in etf_list:
         try:
-            if (ticker, 'Close') in data.columns and not data[(ticker, 'Close')].dropna().empty:
+            if (ticker, 'Adj Close') in data.columns and not data[(ticker, 'Adj Close')].dropna().empty:
                 valid_tickers.append(ticker)
         except Exception:
             continue  
     
-    filtered_data = data.loc[:, [(ticker, 'Close') for ticker in valid_tickers]]
+    filtered_data = data.loc[:, [(ticker, 'Adj Close') for ticker in valid_tickers]]
 
     return valid_tickers, filtered_data

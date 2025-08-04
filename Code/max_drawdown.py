@@ -6,10 +6,10 @@ def calculate_max_drawdown(user_max_drawdown, user_minimum_efs_age, valid_ticker
     tickers_within_user_drawdown_tolerance = []
 
     for ticker in valid_tickers:
-        if 'Close' not in data[ticker]:
+        if 'Adj Close' not in data[ticker]:
             continue
 
-        prices = data[ticker]['Close'].dropna()
+        prices = data[ticker]['Adj Close'].dropna()
         past_10_year_date = end_date - pd.DateOffset(years=10)
 
         prices_origin = prices[prices.index <= end_date]
