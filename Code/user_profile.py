@@ -15,7 +15,7 @@ def get_choice(prompt, options):
 
 def getUserProfile():
     time_horizon_options = [1, 4, 8, 15, 25]
-    desired_growth_options = [2, 4, 6, 8, 11]
+    desired_growth_options = [2, 5, 10, 16, 21]
     fluctuation_options = [5, 10, 15, 20, 60]
     worse_case_options = [15, 25, 35, 45, 100]
     minimum_etf_age = [10, 5, 3, 1, 0]
@@ -30,8 +30,8 @@ def getUserProfile():
 
     user_desired_growth = get_choice(
         '\n2. What are your annual growth goals? (1/2/3/4/5):\n'
-        '\t1) Beat inflation (<3%)\n\t2) Modest and reliable (3-5%)\n\t3) Steady longterm (5-7%)\n'
-        '\t4) Strong returns with moderate risk (7-9%)\n\t5) High growth with greater risk (10%+)\n',
+        '\t1) Beat inflation (<3%)\n\t2) Modest and reliable (3-7%)\n\t3) Steady longterm (8-12%)\n'
+        '\t4) Strong returns with moderate risk (13-20%)\n\t5) High growth with greater risk (>20%+)\n',
         desired_growth_options)
 
     user_fluctuation = get_choice(
@@ -53,7 +53,7 @@ def getUserProfile():
     
     user_risk_preference = get_choice(
         '\n6. How would you rate your preferences for risk vs return (1/2/3/4/5):\n'
-        '\t1) Risk averse (3:1)\n\t2) Risk Conscious (2:1)\n\t3) Balanced (1:1))\n\t4) Returns Prioritizd (1:2)\n\t5) Return Focused (1:3)\n',
+        '\t1) Risk Averse (3:1)\n\t2) Risk Conscious (2:1)\n\t3) Balanced (1:1))\n\t4) Returns Prioritized (1:2)\n\t5) Return Focused (1:3)\n',
         risk_preference)
     
 
