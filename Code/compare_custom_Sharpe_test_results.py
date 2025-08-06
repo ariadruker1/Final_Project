@@ -14,19 +14,14 @@ def quantitative_etf_basket_comparison(
     if test_end is None:
         test_end = pd.Timestamp.today()
 
-    print(f"Test period: {test_start.date()} to {test_end.date()}")
-    print(f"Data date range: {df.index.min().date()} to {df.index.max().date()}")
-    
     # Use .loc to slice rows by date, keep all columns
     df = df.loc[test_start:test_end, :]
-    print(f"Data shape after date filtering: {df.shape}")
 
     results = []
 
     for label, tickers in [('Custom', custom_tickers), ('Sharpe', sharpe_tickers)]:
         combined_returns = []
-        print(f"\nProcessing {label} tickers: {tickers}")
-
+   
         for ticker in tickers:
             # Check ticker columns existence
             if (ticker, 'Adj Close') not in df.columns:
@@ -34,7 +29,6 @@ def quantitative_etf_basket_comparison(
                 continue
 
             prices = df[(ticker, 'Adj Close')].dropna()
-            print(f"{ticker} prices count: {len(prices)}")
 
             if len(prices) < 2:
                 print(f"Skipping {ticker} due to insufficient price data in test period")
@@ -82,7 +76,5 @@ def quantitative_etf_basket_comparison(
         results,
         columns=['method', 'mean_annual_return_pct', 'mean_shortfall', 'reward_to_shortfall']
     ).set_index('method')
-
-    print(f"\nResult DataFrame index labels: {df_results.index.tolist()}")
 
     return df_results
