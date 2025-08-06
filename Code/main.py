@@ -43,7 +43,7 @@ def main():
     test_start = end_date - pd.DateOffset(years=test_period)
     results = quantitative_etf_basket_comparison(
         data, custom_recommended_list, sharpe_recommended_list, user[USER_DESIRED_GROWTH], 
-        user[USER_FLUCTUATION], test_start, end_date)
+        user[USER_FLUCTUATION], user[USER_RISK_PREFERENCE], test_start, end_date)
     print("COMPARISON:")
     print(results)
     plot_etf_performance_with_user_preferences(

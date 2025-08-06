@@ -7,6 +7,7 @@ def quantitative_etf_basket_comparison(
     sharpe_tickers,
     user_growth,
     user_std,
+    user_risk_preference, #[risk_weight, return_weight]
     test_start,
     test_end=None
 ):
@@ -52,7 +53,12 @@ def quantitative_etf_basket_comparison(
                                   shortfall_threshold - daily_matrix, 0)
             mean_shortfall = np.mean(shortfalls)
 
-            reward_to_shortfall = np.inf if mean_shortfall == 0 else (mean_annual_return * 100) / (mean_shortfall * 100)
+            risk_weight, return_weight = user_risk_preference
+            # Custom weighted score
+            reward_to_shortfall = (
+                return_weight * mean_annual_return * 100
+                - risk_weight * mean_shortfall * 100
+            )
 
         results.append([
             label,
