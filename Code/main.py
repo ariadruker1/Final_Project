@@ -26,15 +26,15 @@ def main():
     user = getUserProfile()
     valid_tickers, data = download_valid_data()
     end_date = pd.Timestamp(datetime.now())
-    md_tolerable_list = calculate_max_drawdown(user[USER_WORST_CASE], user[USER_MINIMUM_ETF_AGE], valid_tickers, data, end_date)
-    etf_metrics = get_etf_data(md_tolerable_list, user[USER_TIME_HORIZON], data, end_date)
-    quadrant_ideal_etfs = filter_etf_data(etf_metrics, user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], user[USER_TIME_HORIZON])
-    risk_free_data = fetch_risk_free_boc("1995-01-01")
-    etf_utility_calculation = utility_score(quadrant_ideal_etfs, user[USER_TIME_HORIZON], risk_free_data, user[USER_RISK_PREFERENCE])
-    etf_utility_recommend = top_5_recommend(etf_utility_calculation, 'Utility_Score')
+    # md_tolerable_list = calculate_max_drawdown(user[USER_WORST_CASE], user[USER_MINIMUM_ETF_AGE], valid_tickers, data, end_date)
+    # etf_metrics = get_etf_data(md_tolerable_list, user[USER_TIME_HORIZON], data, end_date)
+    # quadrant_ideal_etfs = filter_etf_data(etf_metrics, user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], user[USER_TIME_HORIZON])
+    # risk_free_data = fetch_risk_free_boc("1995-01-01")
+    # etf_utility_calculation = utility_score(quadrant_ideal_etfs, user[USER_TIME_HORIZON], risk_free_data, user[USER_RISK_PREFERENCE])
+    # etf_utility_recommend = top_5_recommend(etf_utility_calculation, 'Utility_Score')
     # print(etf_utility_recommend)
     # plot_risk_return_user(quadrant_ideal_etfs, user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], user[USER_TIME_HORIZON], f'FULL DATA: ETF Risk-Return Space with User Profile (Time Horizon = {user[USER_TIME_HORIZON]}Y)')
-    test_period = 2
+    test_period = 3
     custom_recommended_list, sharpe_recommended_list = recommendation_test(
         user[USER_TIME_HORIZON], user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], 
         user[USER_WORST_CASE], user[USER_MINIMUM_ETF_AGE], user[USER_RISK_PREFERENCE], 

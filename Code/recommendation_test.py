@@ -1,6 +1,5 @@
 import pandas as pd
 from datetime import datetime
-from user_profile import getUserProfile
 from max_drawdown import calculate_max_drawdown
 from Etf_Data import get_etf_data, filter_etf_data
 from visualizing_etf_metrics import plot_risk_return_user
@@ -54,6 +53,6 @@ def recommendation_test(
     print(custom_recommended_list)
     print("SHARPE Recommended ETFs based on training data:")
     print(sharpe_recommended_list)
-    plot_risk_return_user(quadrant_ideal_etfs, desired_growth, std_deviation, time_horizon, f'TRAINING TIME: ETF Risk-Return Space with User Profile (Time Horizon = {time_horizon}Y)')
+    # plot_risk_return_user(quadrant_ideal_etfs, desired_growth, std_deviation, time_horizon, f'TRAINING TIME: ETF Risk-Return Space with User Profile (Time Horizon = {time_horizon}Y)')
 
     return custom_recommended_list, sharpe_recommended_list
