@@ -55,3 +55,31 @@ def get_etf_data(tickers, time_horizon, all_data, end_date):
         results.append(row)
 
     return pd.DataFrame(results)
+
+def filter_etf_data(data, user_return, user_risk, user_time_horizon):
+    """
+    Filter ETFs based on user-defined return and risk criteria.
+    Args:
+    data (pd.DataFrame): DataFrame containing ETF data with growth and standard deviation
+    user_return (float): User's expected return
+    user_risk (float): User's expected risk (standard deviation)
+    Returns:
+    pd.DataFrame: Filtered DataFrame with ETFs that fall into the second quadrant, if less than
+    5 etfs, include first and third quadrants as well. If still less than 5, return all etfs.
+    """
+    filtered_data = data[
+        (data[f'Annual_Growth_{user_time_horizon}Y'] >= user_return) &
+        (data[f'Standard_Deviation_{user_time_horizon}Y'] <= user_risk)
+    ]
+
+    if len(filtered_data) < 5:
+        filtered_data = data[
+            (data[f'Annual_Growth_{user_time_horizon}Y'] >= user_return) |
+            (data[f'Standard_Deviation_{user_time_horizon}Y'] <= user_risk)
+        ]
+
+    if len(filtered_data) < 5:
+        #return all etfs
+        return data
+
+    return filtered_data.reset_index(drop=True)
