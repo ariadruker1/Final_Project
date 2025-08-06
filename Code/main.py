@@ -1,68 +1,58 @@
 '''
 Aria Druker and Linghe Zhou
-
 '''
-
-import user_profile as up
-import max_drawdown as md
 import pandas as pd
-from ishares_ETF_list import download_valid_data
-from Etf_Data import get_etf_data, filter_etf_data
-
 from datetime import datetime
-import pandas as pd
-from kdtree_nearest_5_etfs import kdtree_nearest_5_etfs
-from visualizing_results import plot_etfs_with_user
-from risk_free_rates import fetch_risk_free_boc
 from ishares_ETF_list import download_valid_data
-from Etf_Data import get_etf_data
-from etf_recommend import top_5_recommend
-from utility_score import utility_score
-from recommendation_test import plot_etf_performance_with_user_preferences
-from recommendation_test import recommendation_test
 from user_profile import getUserProfile
 from max_drawdown import calculate_max_drawdown
+from Etf_Data import get_etf_data, filter_etf_data
+from visualizing_etf_metrics import plot_risk_return_user
+from risk_free_rates import fetch_risk_free_boc
+from etf_recommendation_evaluation import top_5_recommend
+from custom_score import utility_score
+from recommendation_test import recommendation_test
+from chart_training_test_performances import plot_etf_performance_with_user_preferences
+from compare_custom_Sharpe_test_results import quantitative_etf_basket_comparison
 
-NEAREST_NEIGHBOURS = 500
 USER_TIME_HORIZON = 0
 USER_DESIRED_GROWTH = 1
 USER_FLUCTUATION = 2
 USER_WORST_CASE = 3
 USER_MINIMUM_ETF_AGE = 4
-
+USER_RISK_PREFERENCE = 5
 
 def main(): 
     user = getUserProfile()
-    time_horizon = user[0]
-    desired_growth = user[1]
-    std_deviation = user[2]
-    max_drawdown = user[3]
-    minimum_etf_age = user[4]
-    risk_preference = user[5]
-
     valid_tickers, data = download_valid_data()
     end_date = pd.Timestamp(datetime.now())
-    md_tolerable_list = calculate_max_drawdown(max_drawdown, minimum_etf_age, valid_tickers, data, end_date)
-    etf_metrics = get_etf_data(md_tolerable_list, time_horizon, data, end_date)
+    md_tolerable_list = calculate_max_drawdown(user[USER_WORST_CASE], user[USER_MINIMUM_ETF_AGE], valid_tickers, data, end_date)
+    etf_metrics = get_etf_data(md_tolerable_list, user[USER_TIME_HORIZON], data, end_date)
+    quadrant_ideal_etfs = filter_etf_data(etf_metrics, user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], user[USER_TIME_HORIZON])
     risk_free_data = fetch_risk_free_boc("1995-01-01")
-    etf_utility_calculation = utility_score(etf_metrics, time_horizon, risk_free_data, risk_preference)
+    etf_utility_calculation = utility_score(quadrant_ideal_etfs, user[USER_TIME_HORIZON], risk_free_data, user[USER_RISK_PREFERENCE])
     etf_utility_recommend = top_5_recommend(etf_utility_calculation, 'Utility_Score')
     print(etf_utility_recommend)
-    nearest = kdtree_nearest_5_etfs(user[1], user[2], etf_metrics, user[0], NEAREST_NEIGHBOURS)
-    plot_etfs_with_user(etf_metrics, user[1], user[2], user[0])
-    test_period = 3
-    train_start = end_date - pd.DateOffset(years=time_horizon) - pd.DateOffset(years=test_period)
-    train_end = end_date - pd.DateOffset(years=time_horizon)
-    test_start = train_end
-    test_end = end_date
-    plot_etf_performance_with_user_preferences(
-        data, nearest.head(5)["Ticker"].tolist(), train_start, train_end, test_start, test_end, time_horizon,
-        desired_growth, std_deviation, max_drawdown, minimum_etf_age, risk_preference
+    # plot_risk_return_user(quadrant_ideal_etfs, user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], user[USER_TIME_HORIZON], f'FULL DATA: ETF Risk-Return Space with User Profile (Time Horizon = {user[USER_TIME_HORIZON]}Y)')
+    test_period = 2
+    custom_recommended_list, sharpe_recommended_list = recommendation_test(
+        user[USER_TIME_HORIZON], user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], 
+        user[USER_WORST_CASE], user[USER_MINIMUM_ETF_AGE], user[USER_RISK_PREFERENCE], 
+        valid_tickers, data, test_period
     )
-    recommendation_test(user, valid_tickers, data, test_period)
+    test_start = end_date - pd.DateOffset(years=test_period)
+    results = quantitative_etf_basket_comparison(
+        data, custom_recommended_list, sharpe_recommended_list, user[USER_DESIRED_GROWTH], 
+        user[USER_FLUCTUATION], test_start, end_date)
+    print("COMPARISON:")
+    print(results)
+    plot_etf_performance_with_user_preferences(
+        data, custom_recommended_list, sharpe_recommended_list, test_period, 
+        user[USER_TIME_HORIZON], user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], 
+        user[USER_WORST_CASE], user[USER_MINIMUM_ETF_AGE], user[USER_RISK_PREFERENCE]
+    )
     # plot_etf_performance_with_user_preferences(data, valid_tickers, train_start, train_end, test_start, test_end, desired_growth, std_deviation)
-    print(f'Time_Horizon: {user[0]}\nGrowth: {user[1]}\nSTD: {user[2]}\nMax_Drawdown: {user[3]}\nMin_ETF_Age: {user[4]}')
-    plot_etfs_with_user(
-        etf_distances, user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], user[USER_TIME_HORIZON])
+    print(f'Time_Horizon: {user[USER_TIME_HORIZON]}\nGrowth: {user[USER_DESIRED_GROWTH]}\nSTD: {user[USER_FLUCTUATION]}\nMax_Drawdown:'
+          + f'{user[USER_WORST_CASE]}\nMin_ETF_Age: {user[USER_MINIMUM_ETF_AGE]}\nRisk_Return_Ratio: {user[USER_RISK_PREFERENCE]}\n')
 
 main()
