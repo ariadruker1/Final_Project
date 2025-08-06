@@ -19,6 +19,7 @@ def getUserProfile():
     fluctuation_options = [5, 10, 15, 20, 60]
     worse_case_options = [15, 25, 35, 45, 100]
     minimum_etf_age = [10, 5, 3, 1, 0]
+    risk_preference = [[3,1], [3,1], [1,1], [1,2], [1,3]]
 
     print("\nHello and welcome to ETF Navigator!\nPlease answer the following questions...")
 
@@ -50,5 +51,10 @@ def getUserProfile():
         '\t1) Very Established (>10 years)\n\t2) Experienced some variation (>5 years)\n\t3) Newer is okay (>3 years)\n\t4) I don\'t mind less data (>1 year)\n\t5) I want all options (up to present)\n',
         minimum_etf_age)
     
+    user_risk_preference = get_choice(
+        '\n6. How would you rate your preferences for risk vs return (1/2/3/4/5):\n'
+        '\t1) Risk averse (3:1)\n\t2) Risk Conscious (2:1)\n\t3) Balanced (1:1))\n\t4) Returns Prioritizd (1:2)\n\t5) Return Focused (1:3)\n',
+        risk_preference)
+    
 
-    return [user_time_horizon, user_desired_growth, user_fluctuation, user_worst_case, user_minimum_efs_age]
+    return [user_time_horizon, user_desired_growth, user_fluctuation, user_worst_case, user_minimum_efs_age, user_risk_preference]
