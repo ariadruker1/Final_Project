@@ -7,7 +7,7 @@ from visualizing_etf_metrics import plot_risk_return_user
 from risk_free_rates import fetch_risk_free_boc
 from etf_recommendation_evaluation import top_5_recommend
 from custom_score import utility_score
-from sharpe_recommendation import sharpe_top_5
+from sharpe_recommendation import sharpe_score
 
 def recommendation_test(
     time_horizon, desired_growth, std_deviation, max_drawdown, 
@@ -38,11 +38,17 @@ def recommendation_test(
 
     # Calculate utility scores based on training metrics
     etf_utility_calculation = utility_score(quadrant_ideal_etfs, time_horizon, risk_free_data, risk_preference)
+    print("CUSTOM 5 Selected data:")
+    print(etf_utility_calculation.head(5))
     # Select top 5 ETFs by Utility_Score
     custom_recommended_list = top_5_recommend(etf_utility_calculation, 'Utility_Score')['Ticker'].tolist()
 
+    # Calculate sharpe scores
+    sharpe_scoring_calculation = sharpe_score(etf_metrics, time_horizon,risk_free_data)
+    print("\nSHARPE 5 Selected data:")
+    print(sharpe_scoring_calculation.head(5))
     # Calculate and recommend 5 ETFs based on Sharpe Ratio
-    sharpe_recommended_list = sharpe_top_5(etf_metrics, time_horizon, risk_free_data)
+    sharpe_recommended_list = top_5_recommend(sharpe_scoring_calculation, 'Sharpe')['Ticker'].tolist()
 
     print("CUSTOM Recommended ETFs based on training data:")
     print(custom_recommended_list)

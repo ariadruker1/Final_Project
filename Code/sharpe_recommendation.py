@@ -1,6 +1,6 @@
 import pandas as pd
 
-def sharpe_top_5(etf_df, time_horizon, risk_free_df):
+def sharpe_score(etf_df, time_horizon, risk_free_df):
     """
     Compute Sharpe Ratios and return top 5 ETFs by Sharpe Ratio.
 
@@ -31,5 +31,4 @@ def sharpe_top_5(etf_df, time_horizon, risk_free_df):
     df['Sharpe'] = df['ExcessReturn'] / df[std_col]
 
     # Return top 5
-    top_5 = df.sort_values('Sharpe', ascending=False).head(5)
-    return top_5['Ticker'].tolist()
+    return df.sort_values('Sharpe', ascending=False)

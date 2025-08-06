@@ -1,6 +1,6 @@
 def top_5_recommend(df, column_title):
     """
-    Returns top 5 rows with highest Sharpe ratios and prints elapsed time.
+    Returns top 5 rows with highest scoring etf data.
 
     Args:
         df (pd.DataFrame): DataFrame containing at least the column `column_title`.

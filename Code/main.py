@@ -32,7 +32,7 @@ def main():
     risk_free_data = fetch_risk_free_boc("1995-01-01")
     etf_utility_calculation = utility_score(quadrant_ideal_etfs, user[USER_TIME_HORIZON], risk_free_data, user[USER_RISK_PREFERENCE])
     etf_utility_recommend = top_5_recommend(etf_utility_calculation, 'Utility_Score')
-    print(etf_utility_recommend)
+    # print(etf_utility_recommend)
     # plot_risk_return_user(quadrant_ideal_etfs, user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], user[USER_TIME_HORIZON], f'FULL DATA: ETF Risk-Return Space with User Profile (Time Horizon = {user[USER_TIME_HORIZON]}Y)')
     test_period = 2
     custom_recommended_list, sharpe_recommended_list = recommendation_test(

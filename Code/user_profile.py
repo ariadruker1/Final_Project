@@ -19,7 +19,7 @@ def getUserProfile():
     fluctuation_options = [5, 10, 15, 20, 60]
     worse_case_options = [15, 25, 35, 45, 100]
     minimum_etf_age = [10, 5, 3, 1, 0]
-    risk_preference = [[3,1], [3,1], [1,1], [1,2], [1,3]]
+    risk_preference = [[5,1], [3,1], [1,1], [1,3], [1,5]]
 
     print("\nHello and welcome to ETF Navigator!\nPlease answer the following questions...")
 
