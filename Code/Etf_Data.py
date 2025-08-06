@@ -3,7 +3,7 @@ import numpy as np
 from datetime import datetime, timedelta
 
 
-def get_etf_data(tickers, time_horizon, all_data):
+def get_etf_data(tickers, time_horizon, all_data, end_date):
     """
     Get annual growth and standard deviation for multiple time periods for all ETFs
     Args:
@@ -13,8 +13,7 @@ def get_etf_data(tickers, time_horizon, all_data):
     Returns:
     pd.DataFrame: DataFrame with annual growth and standard deviation for each ETF
     """
-    end_date = datetime.now()
-    start_date = end_date - timedelta(days=365 * time_horizon)
+    start_date = end_date - pd.DateOffset(years=time_horizon)
     results = []
     print(f"Processing {len(tickers)} ETFs...")
 
