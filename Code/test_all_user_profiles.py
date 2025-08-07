@@ -13,13 +13,14 @@ USER_FLUCTUATION = 2
 USER_WORST_CASE = 3
 USER_MINIMUM_ETF_AGE = 4
 USER_RISK_PREFERENCE = 5
+
 def generate_all_user_tests():
     valid_tickers, data = download_valid_data()
     end_date = pd.Timestamp(datetime.now())
     test_period = 1
     test_start = end_date - pd.DateOffset(years=test_period)
 
-    time_horizons = [5]
+    time_horizons = [8]
     growths = [2, 10, 21]
     stds = [5, 15, 60]
     max_drawdowns = [15, 35, 100]
