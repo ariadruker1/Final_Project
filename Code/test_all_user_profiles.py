@@ -20,7 +20,7 @@ def generate_all_user_tests():
     test_period = 1
     test_start = end_date - pd.DateOffset(years=test_period)
 
-    time_horizons = [8]
+    time_horizons = [15]
     growths = [2, 10, 21]
     stds = [5, 15, 60]
     max_drawdowns = [15, 35, 100]
@@ -48,13 +48,14 @@ def generate_all_user_tests():
                 continue
 
             result_df = quantitative_etf_basket_comparison(
-    data, custom_list, sharpe_list,
-    user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], user[USER_RISK_PREFERENCE],
-    test_start, end_date
-)
+                data, custom_list, sharpe_list,
+                user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], user[USER_RISK_PREFERENCE],
+                test_start, end_date
+            )
 
             print(f"Result DataFrame index labels: {result_df.index.tolist()}")
 
+            # Ensure required rows exist
             if 'Sharpe' not in result_df.index or 'Custom' not in result_df.index:
                 print("Skipping due to missing 'Sharpe' or 'Custom' in results")
                 continue
@@ -66,12 +67,10 @@ def generate_all_user_tests():
                 "max_drawdown": user[USER_WORST_CASE],
                 "min_etf_age": user[USER_MINIMUM_ETF_AGE],
                 "risk_preference": user[USER_RISK_PREFERENCE],
-                "sharpe_return": result_df.loc['Sharpe', 'mean_annual_return_pct'],
-                "sharpe_shortfall": result_df.loc['Sharpe', 'mean_shortfall'],
-                "sharpe_reward_to_shortfall": result_df.loc['Sharpe', 'reward_to_shortfall'],
-                "custom_return": result_df.loc['Custom', 'mean_annual_return_pct'],
-                "custom_shortfall": result_df.loc['Custom', 'mean_shortfall'],
-                "custom_reward_to_shortfall": result_df.loc['Custom', 'reward_to_shortfall'],
+                "sharpe_return": result_df.loc['Sharpe', 'Annual Return (%)'],
+                "sharpe_reward_to_shortfall": result_df.loc['Sharpe', 'Reward to Shortfall'],
+                "custom_return": result_df.loc['Custom', 'Annual Return (%)'],
+                "custom_reward_to_shortfall": result_df.loc['Custom', 'Reward to Shortfall'],
             })
 
         except Exception as e:
