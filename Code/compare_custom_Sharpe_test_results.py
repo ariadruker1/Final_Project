@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+import pandas as pd
+import numpy as np
 
 def quantitative_etf_basket_comparison(
     df,
@@ -7,14 +9,15 @@ def quantitative_etf_basket_comparison(
     sharpe_tickers,
     user_growth,
     user_std,
-    user_risk_preference, #[risk_weight, return_weight]
+    user_risk_preference,  # [risk_weight, return_weight]
     test_start,
-    test_end=None
+    test_end=None,
+    risk_free_rate=0.02,
 ):
     if test_end is None:
         test_end = pd.Timestamp.today()
 
-    df = df[(df.index >= test_start) & (df.index <= test_end)].copy()
+    df = df.loc[test_start:test_end, :]  # slice the testing period
 
     results = []
 
@@ -22,49 +25,59 @@ def quantitative_etf_basket_comparison(
         combined_returns = []
 
         for ticker in tickers:
-            try:
-                prices = df[(ticker, 'Adj Close')].dropna()
-                if len(prices) < 2:
-                    continue
-
-                prices = prices / prices.iloc[0] * 100  # Normalize to 100
-                daily_returns = prices.pct_change().dropna()
-                if daily_returns.empty:
-                    continue
-
-                mean_daily_return = daily_returns.mean()
-                annual_return = (1 + mean_daily_return) ** 252 - 1
-                combined_returns.append(daily_returns)
-
-            except Exception:
+            if (ticker, 'Adj Close') not in df.columns:
+                print(f"{ticker} not found in test data.")
                 continue
 
+            prices = df[(ticker, 'Adj Close')].dropna()
+            if len(prices) < 2:
+                continue
+
+            returns = prices.pct_change().dropna()
+            combined_returns.append(returns)
+
         if not combined_returns:
-            mean_annual_return = 0
+            print(f"No valid returns for {label}")
+            results.append([
+                label, None, None, None, None, None, None
+            ])
+            continue
+
+        test_returns = pd.concat(combined_returns, axis=1).mean(axis=1)
+
+        # Calculate metrics
+        ann_return = (1 + test_returns.mean()) ** 252 - 1
+        ann_std = test_returns.std() * np.sqrt(252)
+        sharpe = (ann_return - risk_free_rate) / ann_std if ann_std else np.nan
+
+        downside = test_returns[test_returns < 0]
+        sortino = (ann_return - risk_free_rate) / (downside.std() * np.sqrt(252)) if not downside.empty else np.nan
+
+        cum_returns = (1 + test_returns).cumprod()
+        peak = cum_returns.cummax()
+        drawdown = (cum_returns - peak) / peak
+        max_dd = drawdown.min()
+
+        if user_growth is not None and user_std is not None:
+            threshold = (user_growth - user_std) / 100 / 252
+            shortfalls = np.where(test_returns < threshold, threshold - test_returns, 0)
+            mean_shortfall = np.mean(shortfalls)
+            reward_to_shortfall = ann_return * 100 - mean_shortfall * 100
+        else:
             mean_shortfall = np.nan
             reward_to_shortfall = np.nan
-        else:
-            daily_matrix = pd.concat(combined_returns, axis=1)
-            mean_daily_return = daily_matrix.mean().mean()
-            mean_annual_return = (1 + mean_daily_return) ** 252 - 1
-
-            shortfall_threshold = (user_growth - user_std) / 100 / 252
-            shortfalls = np.where(daily_matrix < shortfall_threshold,
-                                  shortfall_threshold - daily_matrix, 0)
-            mean_shortfall = np.mean(shortfalls)
-
-            risk_weight, return_weight = user_risk_preference
-            # Custom weighted score
-            reward_to_shortfall = (
-                return_weight * mean_annual_return * 100
-                - risk_weight * mean_shortfall * 100
-            )
 
         results.append([
             label,
-            round(mean_annual_return * 100, 2),
-            round(mean_shortfall, 4) if not np.isnan(mean_shortfall) else None,
-            round(reward_to_shortfall, 2) if not np.isnan(reward_to_shortfall) else None
+            round(ann_return * 100, 2),
+            round(ann_std * 100, 2),
+            round(sharpe, 2),
+            round(sortino, 2) if not np.isnan(sortino) else None,
+            round(max_dd * 100, 2),
+            round(reward_to_shortfall, 2)
         ])
 
-    return pd.DataFrame(results, columns=['Set', 'mean_annual_return_pct', 'mean_shortfall', 'reward_to_shortfall'])
+    return pd.DataFrame(results, columns=[
+        'method', 'Annual Return (%)', 'Volatility (%)', 'Sharpe', 'Sortino',
+        'Max Drawdown (%)', 'Reward to Shortfall'
+    ]).set_index('method')
