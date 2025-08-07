@@ -23,8 +23,8 @@ USER_MINIMUM_ETF_AGE = 4
 USER_RISK_PREFERENCE = 5
 
 def main(): 
-    user = getUserProfile()
     valid_tickers, data = download_valid_data()
+    user = getUserProfile()
     end_date = pd.Timestamp(datetime.now())
     # md_tolerable_list = calculate_max_drawdown(user[USER_WORST_CASE], user[USER_MINIMUM_ETF_AGE], valid_tickers, data, end_date)
     # etf_metrics = get_etf_data(md_tolerable_list, user[USER_TIME_HORIZON], data, end_date)
