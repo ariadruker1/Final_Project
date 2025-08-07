@@ -8,6 +8,7 @@ def plot_etf_performance_with_user_preferences(
     """
     Plot ETF prices over training and test periods, normalized, with user desired cumulative growth
     and linear risk bands, plus a user profile summary and legend below.
+    Adds ETF tickers at the end of each test line.
     """
     plt.figure(figsize=(12, 8))
     colors = list(mcolors.TABLEAU_COLORS.values())
@@ -34,7 +35,6 @@ def plot_etf_performance_with_user_preferences(
         try:
             price_series = data[(ticker, 'Adj Close')].dropna()
         except Exception:
-            # fallback if structure is different
             try:
                 price_series = data[ticker].dropna()
             except Exception:
@@ -47,14 +47,27 @@ def plot_etf_performance_with_user_preferences(
             continue
         train_norm = 100 * train_prices / train_prices.iloc[0]
 
-        # Test normalized (same base)
+        # Test normalized
         test_prices = price_series.loc[test_start:test_end]
         if test_prices.empty:
             continue
         test_norm = 100 * test_prices / train_prices.iloc[0]
 
-        plt.plot(train_norm.index, train_norm.values, label=f'{ticker} Training', color=color, linewidth=2)
-        plt.plot(test_norm.index, test_norm.values, label=f'{ticker} Test', color=color, linestyle='--', alpha=0.6, linewidth=1)
+        # Plot lines
+        plt.plot(train_norm.index, train_norm.values, color=color, linewidth=2)
+        plt.plot(test_norm.index, test_norm.values, color=color, linestyle='--', alpha=0.6, linewidth=1)
+
+        # Label ETF at the end of test line
+        try:
+            last_date = test_norm.index[-1]
+            last_value = test_norm.iloc[-1]
+            plt.text(
+                last_date, last_value,
+                ticker,
+                fontsize=8, color=color, va='center', ha='left'
+            )
+        except Exception:
+            continue
 
     # Plot user desired growth and linear risk band once
     plt.plot(dates, user_growth_line, color='green', linestyle='-', linewidth=2, label='User Desired Growth')
@@ -91,5 +104,5 @@ def plot_etf_performance_with_user_preferences(
         fontsize=9
     )
     plt.tight_layout()
-    plt.subplots_adjust(bottom=0.25)  # ensure space for legend
+    plt.subplots_adjust(bottom=0.25)
     plt.show()

@@ -12,7 +12,7 @@ from risk_free_rates import fetch_risk_free_boc
 from etf_recommendation_evaluation import top_5_recommend
 from custom_score import utility_score
 from recommendation_test import recommendation_test
-from chart_training_test_performances import plot_etf_performance_with_user_preferences
+from graph_performance import plot_annual_growth_rate
 from compare_custom_Sharpe_test_results import quantitative_etf_basket_comparison
 from sharpe_recommendation import sharpe_score
 
@@ -35,24 +35,37 @@ def main():
     # etf_utility_recommend = top_5_recommend(etf_utility_calculation, 'Utility_Score')
     # print(etf_utility_recommend)
     # plot_risk_return_user(quadrant_ideal_etfs, user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], user[USER_TIME_HORIZON], f'FULL DATA: ETF Risk-Return Space with User Profile (Time Horizon = {user[USER_TIME_HORIZON]}Y)')
-    test_period = 3
+    test_period = 2
     custom_recommended_list, sharpe_recommended_list = recommendation_test(
         user[USER_TIME_HORIZON], user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], 
         user[USER_WORST_CASE], user[USER_MINIMUM_ETF_AGE], user[USER_RISK_PREFERENCE], 
         valid_tickers, data, test_period
     )
+    train_start = end_date - pd.DateOffset(years=test_period) - pd.DateOffset(years=user[USER_TIME_HORIZON])
     test_start = end_date - pd.DateOffset(years=test_period)
     results = quantitative_etf_basket_comparison(
         data, custom_recommended_list, sharpe_recommended_list, user[USER_DESIRED_GROWTH], 
         user[USER_FLUCTUATION], user[USER_RISK_PREFERENCE], test_start, end_date)
     print("COMPARISON:")
     print(results)
-    plot_etf_performance_with_user_preferences(
+    (
         data, custom_recommended_list, sharpe_recommended_list, test_period, 
         user[USER_TIME_HORIZON], user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], 
         user[USER_WORST_CASE], user[USER_MINIMUM_ETF_AGE], user[USER_RISK_PREFERENCE]
     )
-    # plot_etf_performance_with_user_preferences(data, valid_tickers, train_start, train_end, test_start, test_end, desired_growth, std_deviation)
+    plot_annual_growth_rate(
+        data, 
+        custom_recommended_list, 
+        sharpe_recommended_list,
+        test_period,
+        user[USER_TIME_HORIZON],
+        user[USER_DESIRED_GROWTH],
+        user[USER_FLUCTUATION],
+        user[USER_WORST_CASE],      # max drawdown
+        user[USER_MINIMUM_ETF_AGE],
+        user[USER_RISK_PREFERENCE]
+    )
+
     print(f'Time_Horizon: {user[USER_TIME_HORIZON]}\nGrowth: {user[USER_DESIRED_GROWTH]}\nSTD: {user[USER_FLUCTUATION]}\nMax_Drawdown:'
           + f'{user[USER_WORST_CASE]}\nMin_ETF_Age: {user[USER_MINIMUM_ETF_AGE]}\nRisk_Return_Ratio: {user[USER_RISK_PREFERENCE]}\n')
 
