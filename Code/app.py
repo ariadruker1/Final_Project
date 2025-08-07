@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.graph_objects as go
 from datetime import datetime
 from ishares_ETF_list import download_valid_data
 from max_drawdown import calculate_max_drawdown
@@ -20,136 +21,81 @@ USER_WORST_CASE = 3
 USER_MINIMUM_ETF_AGE = 4
 USER_RISK_PREFERENCE = 5
 
-# # Set page config for dark theme
-# st.set_page_config(
-#     page_title="ETF Navigator",
-#     page_icon="📈",
-#     layout="centered",
-#     initial_sidebar_state="collapsed"
-# )
-
-# # Custom CSS for financial dark theme
-# st.markdown("""
-# <style>
-#     .stApp {
-#         background-color: #0e1117;
-#         color: #ffffff;
-#     }
-
-#     .main-header {
-#         text-align: center;
-#         color: #00d4aa;
-#         font-size: 2.5rem;
-#         font-weight: 700;
-#         margin-bottom: 10px;
-#         text-shadow: 0 0 10px rgba(0, 212, 170, 0.3);
-#     }
-
-#     .sub-text {
-#         text-align: center;
-#         color: #b8bcc8;
-#         font-size: 1.1rem;
-#         margin-bottom: 30px;
-#     }
-
-#     .question-container {
-#         background: linear-gradient(135deg, #1e2329 0%, #2b2f36 100%);
-#         padding: 30px;
-#         border-radius: 15px;
-#         border: 1px solid #00d4aa;
-#         box-shadow: 0 8px 32px rgba(0, 212, 170, 0.1);
-#         margin: 20px 0;
-#     }
-
-#     .question-title {
-#         color: #00d4aa;
-#         font-size: 1.4rem;
-#         font-weight: 600;
-#         margin-bottom: 15px;
-#     }
-
-#     .question-text {
-#         color: #ffffff;
-#         font-size: 1.2rem;
-#         font-weight: 500;
-#         margin-bottom: 20px;
-#     }
-
-#     .progress-text {
-#         color: #b8bcc8;
-#         text-align: center;
-#         margin-bottom: 15px;
-#         font-weight: 500;
-#     }
-
-#     .results-container {
-#         background: linear-gradient(135deg, #1a1d29 0%, #2d3748 100%);
-#         padding: 30px;
-#         border-radius: 15px;
-#         border: 2px solid #00d4aa;
-#         box-shadow: 0 12px 48px rgba(0, 212, 170, 0.2);
-#         margin: 20px 0;
-#     }
-
-#     .success-title {
-#         color: #00d4aa;
-#         font-size: 1.8rem;
-#         font-weight: 700;
-#         text-align: center;
-#         margin-bottom: 20px;
-#     }
-
-#     /* Style the selectbox */
-#     .stSelectbox > div > div {
-#         background-color: #2b2f36;
-#         border: 1px solid #00d4aa;
-#         border-radius: 8px;
-#         color: #ffffff;
-#         font-size: 1.1rem;
-#     }
-
-#     .stSelectbox label {
-#         color: #ffffff !important;
-#         font-size: 1.2rem !important;
-#         font-weight: 500 !important;
-#     }
-
-#     /* Style buttons */
-#     .stButton > button {
-#         background: linear-gradient(45deg, #00d4aa, #00a88f);
-#         color: #ffffff;
-#         border: none;
-#         border-radius: 8px;
-#         font-weight: 600;
-#         padding: 10px 24px;
-#         transition: all 0.3s ease;
-#         font-size: 1rem;
-#     }
-
-#     .stButton > button:hover {
-#         background: linear-gradient(45deg, #00a88f, #008f7a);
-#         box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3);
-#         transform: translateY(-2px);
-#     }
-
-#     /* Progress bar styling */
-#     .stProgress > div > div {
-#         background: linear-gradient(90deg, #00d4aa, #00a88f);
-#     }
-
-#     /* DataFrames */
-#     .stDataFrame {
-#         background-color: #1e2329;
-#         border: 1px solid #00d4aa;
-#         border-radius: 8px;
-#     }
-
-#     /* Hide empty containers */
-#     .element-container:has(.stProgress) + .element-container:empty {
-#         display: none;
-#     }
-# </style>
-# """, unsafe_allow_html=True)
+def create_etf_performance_chart(etf_recommend_df, data, time_horizon, chart_title):
+    """
+    Create a simple interactive line chart showing ETF performance over time
+    """
+    # Get the recommended ETF tickers
+    etf_tickers = etf_recommend_df['Ticker'].tolist()
+    
+    # Calculate start and end dates
+    end_date = pd.Timestamp(datetime.now())
+    start_date = end_date - pd.DateOffset(years=time_horizon)
+    
+    # Create the plotly figure
+    fig = go.Figure()
+    
+    for ticker in etf_tickers:
+        try:
+            # Get price data for this ETF - fix the column access issue
+            try:
+                price_series = data[(ticker, 'Adj Close')].dropna()
+            except (KeyError, TypeError):
+                try:
+                    price_series = data[ticker].dropna()
+                except (KeyError, TypeError):
+                    print(f"Error: Cannot find price data for {ticker}")
+                    continue
+                
+            # Filter to the time horizon
+            period_prices = price_series.loc[start_date:end_date]
+            if period_prices.empty:
+                continue
+                
+            # Normalize to start at 100 for better comparison
+            normalized_prices = 100 * period_prices / period_prices.iloc[0]
+            
+            # Get metrics for this ETF
+            etf_metrics = etf_recommend_df[etf_recommend_df['Ticker'] == ticker].iloc[0]
+            
+            # Create hover text with only requested metrics
+            growth_col = f'Annual_Growth_{time_horizon}Y'
+            std_col = f'Standard_Deviation_{time_horizon}Y'
+            
+            hover_text = []
+            for date, price in zip(normalized_prices.index, normalized_prices.values):
+                hover_text.append(
+                    f"<b>{ticker}</b><br>" +
+                    f"Date: {date.strftime('%Y-%m-%d')}<br>" +
+                    f"Annual Growth: {etf_metrics[growth_col]:.2f}%<br>" +
+                    f"Standard Deviation: {etf_metrics[std_col]:.2f}%"
+                )
+            
+            # Add trace for this ETF
+            fig.add_trace(go.Scatter(
+                x=normalized_prices.index,
+                y=normalized_prices.values,
+                mode='lines',
+                name=ticker,
+                line=dict(width=2),
+                hovertemplate='%{text}<extra></extra>',
+                text=hover_text
+            ))
+            
+        except Exception as e:
+            print(f"Error processing {ticker}: {e}")
+            continue
+    
+    # Simple layout
+    fig.update_layout(
+        title=chart_title,
+        xaxis_title="Date",
+        yaxis_title="Normalized Price",
+        hovermode='closest',
+        height=400
+    )
+    
+    return fig
 
 # Initialize session state
 if 'step' not in st.session_state:
@@ -342,23 +288,77 @@ elif st.session_state.step == 7:
             )
             etf_metrics = get_etf_data(
                 md_tolerable_list, user[USER_TIME_HORIZON], data, end_date)
-            quadrant_ideal_etfs = filter_etf_data(
-                etf_metrics, user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], user[USER_TIME_HORIZON])
             risk_free_data = fetch_risk_free_boc("1995-01-01")
-            # etf_utility_calculation = utility_score(
-            #     quadrant_ideal_etfs, user[USER_TIME_HORIZON], risk_free_data, user[USER_RISK_PREFERENCE])
-            # etf_utility_recommend = top_5_recommend(
-            #     etf_utility_calculation, 'Utility_Score')
+            
+            # Calculate both Sharpe and Utility recommendations
             etf_sharpe_calculation = sharpe_score(
-                quadrant_ideal_etfs, user[USER_TIME_HORIZON], risk_free_data)
+                etf_metrics, user[USER_TIME_HORIZON], risk_free_data)
             etf_sharpe_recommend = top_5_recommend(
                 etf_sharpe_calculation, 'Sharpe')
 
+            etf_utility_calculation = utility_score(
+                etf_metrics, user[USER_TIME_HORIZON], risk_free_data, user[USER_RISK_PREFERENCE])
+            etf_utility_recommend = top_5_recommend(
+                etf_utility_calculation, 'Utility_Score')
+
             st.success("✅ Analysis complete!")
-            st.dataframe(etf_sharpe_recommend, use_container_width=True)
+            
+            # Create two columns for side-by-side charts
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.subheader("📈 Sharpe Ratio Based")
+                if not etf_sharpe_recommend.empty:
+                    sharpe_chart = create_etf_performance_chart(
+                        etf_sharpe_recommend, 
+                        data, 
+                        user[USER_TIME_HORIZON],
+                        f"Top 5 ETFs by Sharpe Ratio ({user[USER_TIME_HORIZON]} Years)"
+                    )
+                    st.plotly_chart(sharpe_chart, use_container_width=True)
+                else:
+                    st.warning("No Sharpe-based ETFs found.")
+            
+            with col2:
+                st.subheader("⚖️ Utility Score Based")
+                if not etf_utility_recommend.empty:
+                    utility_chart = create_etf_performance_chart(
+                        etf_utility_recommend, 
+                        data, 
+                        user[USER_TIME_HORIZON],
+                        f"Top 5 ETFs by Utility Score ({user[USER_TIME_HORIZON]} Years)"
+                    )
+                    st.plotly_chart(utility_chart, use_container_width=True)
+                else:
+                    st.warning("No Utility-based ETFs found.")
+
+            # Show simplified metrics tables below
+            st.subheader("📊 Detailed Metrics Comparison")
+            
+            # Create simplified dataframes with only requested columns
+            growth_col = f'Annual_Growth_{user[USER_TIME_HORIZON]}Y'
+            std_col = f'Standard_Deviation_{user[USER_TIME_HORIZON]}Y'
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write("**Sharpe Ratio Recommendations:**")
+                if not etf_sharpe_recommend.empty:
+                    sharpe_simple = etf_sharpe_recommend[['Ticker', growth_col, std_col]].reset_index(drop=True)
+                    sharpe_simple.columns = ['Ticker', 'Annual Growth (%)', 'Standard Deviation (%)']
+                    st.dataframe(sharpe_simple, use_container_width=True, hide_index=True)
+                else:
+                    st.write("No data available")
+            
+            with col2:
+                st.write("**Utility Score Recommendations:**")
+                if not etf_utility_recommend.empty:
+                    utility_simple = etf_utility_recommend[['Ticker', growth_col, std_col]].reset_index(drop=True)
+                    utility_simple.columns = ['Ticker', 'Annual Growth (%)', 'Standard Deviation (%)']
+                    st.dataframe(utility_simple, use_container_width=True, hide_index=True)
+                else:
+                    st.write("No data available")
 
             if st.button("Start Over", key="restart"):
-                # Reset session state
                 st.session_state.step = 1
                 st.session_state.user_profile = [None] * 6
                 st.rerun()
