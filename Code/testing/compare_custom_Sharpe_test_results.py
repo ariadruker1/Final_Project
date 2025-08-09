@@ -2,9 +2,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__)))))
-    
-import pandas as pd
-import numpy as np
+
 import pandas as pd
 import numpy as np
 
@@ -22,6 +20,12 @@ def quantitative_etf_basket_comparison(
         test_end = pd.Timestamp.today()
 
     df = df.loc[test_start:test_end, :]  # slice the testing period
+
+    # Track unique and overlap
+    unique_custom = sorted(set(custom_tickers) - set(sharpe_tickers))
+    unique_sharpe = sorted(set(sharpe_tickers) - set(custom_tickers))
+    overlap = sorted(set(custom_tickers) & set(sharpe_tickers))
+    overlap_count = len(overlap)
 
     results = []
 
@@ -43,7 +47,8 @@ def quantitative_etf_basket_comparison(
         if not combined_returns:
             print(f"No valid returns for {label}")
             results.append([
-                label, None, None, None, None, None, None
+                label, None, None, None, None, None, None,
+                unique_custom, unique_sharpe, overlap, overlap_count
             ])
             continue
 
@@ -78,10 +83,12 @@ def quantitative_etf_basket_comparison(
             round(sharpe, 2),
             round(sortino, 2) if not np.isnan(sortino) else None,
             round(max_dd * 100, 2),
-            round(reward_to_shortfall, 2)
+            round(reward_to_shortfall, 2),
+            unique_custom, unique_sharpe, overlap, overlap_count
         ])
 
     return pd.DataFrame(results, columns=[
         'method', 'Annual Return (%)', 'Volatility (%)', 'Sharpe', 'Sortino',
-        'Max Drawdown (%)', 'Reward to Shortfall'
+        'Max Drawdown (%)', 'Reward to Shortfall',
+        'Unique Custom ETFs', 'Unique Sharpe ETFs', 'Overlapping ETFs', 'Overlap Count'
     ]).set_index('method')
