@@ -3,22 +3,6 @@ Aria Druker and Linghe Zhou
 '''
 import pandas as pd
 from datetime import datetime
-<<<<<<< HEAD
-from ishares_ETF_list import download_valid_data
-from user_profile import getUserProfile
-from max_drawdown import calculate_max_drawdown
-from Etf_Data import get_etf_data
-from visualizing_etf_metrics import plot_risk_return_user
-from risk_free_rates import fetch_risk_free_boc
-from etf_recommendation_evaluation import top_5_recommend
-from custom_score import utility_score
-from recommendation_test import recommendation_test
-from graph_performance import graph_annual_growth_rate
-from compare_custom_Sharpe_test_results import quantitative_etf_basket_comparison
-from sharpe_recommendation import sharpe_score
-=======
->>>>>>> c219ad54c081057c1dd780e61c6aede4d5fad20a
-
 # Updated imports
 from config.constants import (
     USER_TIME_HORIZON, USER_DESIRED_GROWTH, USER_FLUCTUATION,
@@ -27,16 +11,15 @@ from config.constants import (
 from core.data_processing.ishares_ETF_list import download_valid_data
 from core.user.user_profile import getUserProfile
 from core.analysis.max_drawdown import calculate_max_drawdown
-from core.data_processing.Etf_Data import get_etf_data, filter_etf_data
+from core.data_processing.Etf_Data import get_etf_data
 from visualization.visualizing_etf_metrics import plot_risk_return_user
 from core.data_processing.risk_free_rates import fetch_risk_free_boc
 from core.scoring.etf_recommendation_evaluation import top_5_recommend
 from core.scoring.custom_score import utility_score
 from testing.recommendation_test import recommendation_test
-from visualization.graph_performance import plot_annual_growth_rate
+from visualization.graph_performance import graph_annual_growth_rate
 from testing.compare_custom_Sharpe_test_results import quantitative_etf_basket_comparison
 from core.scoring.sharpe_recommendation import sharpe_score
-
 
 def main():
     valid_tickers, data = download_valid_data()
@@ -66,35 +49,15 @@ def main():
         user[USER_WORST_CASE], user[USER_MINIMUM_ETF_AGE], user[USER_RISK_PREFERENCE],
         valid_tickers, data, test_period
     )
-<<<<<<< HEAD
     test_start = end_date - pd.DateOffset(years=test_period)
     results = quantitative_etf_basket_comparison(
         data, custom_recommended_list, sharpe_recommended_list, user[USER_DESIRED_GROWTH], 
         user[USER_FLUCTUATION], test_start, end_date, risk_free_data['yield_pct'].mean())
-    print("COMPARISON:")
-    print(results)
-    graph_annual_growth_rate(
-        data, 
-        custom_recommended_list, 
-=======
-    train_start = end_date - \
-        pd.DateOffset(years=test_period) - \
-        pd.DateOffset(years=user[USER_TIME_HORIZON])
+    print(results)    
     test_start = end_date - pd.DateOffset(years=test_period)
-    results = quantitative_etf_basket_comparison(
-        data, custom_recommended_list, sharpe_recommended_list, user[USER_DESIRED_GROWTH],
-        user[USER_FLUCTUATION], user[USER_RISK_PREFERENCE], test_start, end_date)
-    print("COMPARISON:")
-    print(results)
-    (
-        data, custom_recommended_list, sharpe_recommended_list, test_period,
-        user[USER_TIME_HORIZON], user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION],
-        user[USER_WORST_CASE], user[USER_MINIMUM_ETF_AGE], user[USER_RISK_PREFERENCE]
-    )
-    plot_annual_growth_rate(
+    graph_annual_growth_rate(
         data,
         custom_recommended_list,
->>>>>>> c219ad54c081057c1dd780e61c6aede4d5fad20a
         sharpe_recommended_list,
         test_period,
         user[USER_TIME_HORIZON],
@@ -104,7 +67,6 @@ def main():
         user[USER_MINIMUM_ETF_AGE],
         user[USER_RISK_PREFERENCE]
     )
-
     print(f'Time_Horizon: {user[USER_TIME_HORIZON]}\nGrowth: {user[USER_DESIRED_GROWTH]}\nSTD: {user[USER_FLUCTUATION]}\nMax_Drawdown:'
           + f'{user[USER_WORST_CASE]}\nMin_ETF_Age: {user[USER_MINIMUM_ETF_AGE]}\nRisk_Return_Ratio: {user[USER_RISK_PREFERENCE]}\n')
 
