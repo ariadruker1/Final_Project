@@ -1,7 +1,6 @@
+# keep these 3 lines at the top of the file
 import sys
 import os
-
-# Add the parent directory (Code) to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.data_processing.ishares_ETF_list import download_valid_data
