@@ -1,10 +1,15 @@
-import pandas as pd
-import itertools
+from testing.compare_custom_Sharpe_test_results import quantitative_etf_basket_comparison
+from testing.recommendation_test import recommendation_test
+# if needed, override this with manual profiles
+from core.user.user_profile import getUserProfile
+from core.data_processing.ishares_ETF_list import download_valid_data
 from datetime import datetime
-from ishares_ETF_list import download_valid_data
-from user_profile import getUserProfile  # if needed, override this with manual profiles
-from recommendation_test import recommendation_test
-from compare_custom_Sharpe_test_results import quantitative_etf_basket_comparison
+import itertools
+import pandas as pd
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 # Constants for index access
 USER_TIME_HORIZON = 0
@@ -13,6 +18,7 @@ USER_FLUCTUATION = 2
 USER_WORST_CASE = 3
 USER_MINIMUM_ETF_AGE = 4
 USER_RISK_PREFERENCE = 5
+
 
 def generate_all_user_tests():
     valid_tickers, data = download_valid_data()
@@ -40,8 +46,10 @@ def generate_all_user_tests():
                 valid_tickers, data, test_period
             )
 
-            print(f"Custom recommended ETFs (count {len(custom_list)}): {custom_list}")
-            print(f"Sharpe recommended ETFs (count {len(sharpe_list)}): {sharpe_list}")
+            print(
+                f"Custom recommended ETFs (count {len(custom_list)}): {custom_list}")
+            print(
+                f"Sharpe recommended ETFs (count {len(sharpe_list)}): {sharpe_list}")
 
             if not custom_list or not sharpe_list:
                 print("Skipping due to empty recommendation list")
@@ -81,9 +89,11 @@ def generate_all_user_tests():
         print("No valid data rows collected to write to Excel.")
     else:
         df = pd.DataFrame(rows)
-        df.to_excel('~/Desktop/all_users_etf_sharpe_custom_compare.xlsx', index=False)
+        df.to_excel(
+            '~/Desktop/all_users_etf_sharpe_custom_compare.xlsx', index=False)
         print(f"Saved results with {len(df)} rows to Excel.")
 
     return rows if rows else None
+
 
 generate_all_user_tests()

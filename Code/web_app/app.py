@@ -1,25 +1,32 @@
-import streamlit as st
-import pandas as pd
-import plotly.graph_objects as go
-from datetime import datetime
-from ishares_ETF_list import download_valid_data
-from max_drawdown import calculate_max_drawdown
-from Etf_Data import get_etf_data, filter_etf_data
-from visualizing_etf_metrics import plot_risk_return_user
-from risk_free_rates import fetch_risk_free_boc
-from etf_recommendation_evaluation import top_5_recommend
-from custom_score import utility_score
-from sharpe_recommendation import sharpe_score
-from recommendation_test import recommendation_test
-from chart_training_test_performances import plot_etf_performance_with_user_preferences
-from compare_custom_Sharpe_test_results import quantitative_etf_basket_comparison
+import sys
+import os
 
-USER_TIME_HORIZON = 0
-USER_DESIRED_GROWTH = 1
-USER_FLUCTUATION = 2
-USER_WORST_CASE = 3
-USER_MINIMUM_ETF_AGE = 4
-USER_RISK_PREFERENCE = 5
+# Add the parent directory (Code) to Python path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from datetime import datetime
+import plotly.graph_objects as go
+import pandas as pd
+import streamlit as st
+
+from config.constants import (
+    USER_TIME_HORIZON, USER_DESIRED_GROWTH, USER_FLUCTUATION,
+    USER_WORST_CASE, USER_MINIMUM_ETF_AGE, USER_RISK_PREFERENCE,
+    TIME_HORIZON_OPTIONS, DESIRED_GROWTH_OPTIONS, FLUCTUATION_OPTIONS,
+    WORSE_CASE_OPTIONS, MINIMUM_ETF_AGE_OPTIONS, RISK_PREFERENCE_OPTIONS
+)
+from visualization.chart_training_test_performances import plot_etf_performance_with_user_preferences
+from testing.compare_custom_Sharpe_test_results import quantitative_etf_basket_comparison
+from testing.recommendation_test import recommendation_test
+from core.data_processing.risk_free_rates import fetch_risk_free_boc
+from core.scoring.sharpe_recommendation import sharpe_score
+from core.scoring.utility_score import utility_score
+from core.scoring.etf_recommendation_evaluation import top_5_recommend
+from core.analysis.max_drawdown import calculate_max_drawdown
+from core.data_processing.Etf_Data import get_etf_data, filter_etf_data
+from core.data_processing.ishares_ETF_list import download_valid_data
+
+
 
 def create_etf_performance_chart(etf_recommend_df, data, time_horizon, chart_title):
     """
@@ -27,14 +34,14 @@ def create_etf_performance_chart(etf_recommend_df, data, time_horizon, chart_tit
     """
     # Get the recommended ETF tickers
     etf_tickers = etf_recommend_df['Ticker'].tolist()
-    
+
     # Calculate start and end dates
     end_date = pd.Timestamp(datetime.now())
     start_date = end_date - pd.DateOffset(years=time_horizon)
-    
+
     # Create the plotly figure
     fig = go.Figure()
-    
+
     for ticker in etf_tickers:
         try:
             # Get price data for this ETF - fix the column access issue
@@ -46,22 +53,23 @@ def create_etf_performance_chart(etf_recommend_df, data, time_horizon, chart_tit
                 except (KeyError, TypeError):
                     print(f"Error: Cannot find price data for {ticker}")
                     continue
-                
+
             # Filter to the time horizon
             period_prices = price_series.loc[start_date:end_date]
             if period_prices.empty:
                 continue
-                
+
             # Normalize to start at 100 for better comparison
             normalized_prices = 100 * period_prices / period_prices.iloc[0]
-            
+
             # Get metrics for this ETF
-            etf_metrics = etf_recommend_df[etf_recommend_df['Ticker'] == ticker].iloc[0]
-            
+            etf_metrics = etf_recommend_df[etf_recommend_df['Ticker']
+                                           == ticker].iloc[0]
+
             # Create hover text with only requested metrics
             growth_col = f'Annual_Growth_{time_horizon}Y'
             std_col = f'Standard_Deviation_{time_horizon}Y'
-            
+
             hover_text = []
             for date, price in zip(normalized_prices.index, normalized_prices.values):
                 hover_text.append(
@@ -70,7 +78,7 @@ def create_etf_performance_chart(etf_recommend_df, data, time_horizon, chart_tit
                     f"Annual Growth: {etf_metrics[growth_col]:.2f}%<br>" +
                     f"Standard Deviation: {etf_metrics[std_col]:.2f}%"
                 )
-            
+
             # Add trace for this ETF
             fig.add_trace(go.Scatter(
                 x=normalized_prices.index,
@@ -81,11 +89,11 @@ def create_etf_performance_chart(etf_recommend_df, data, time_horizon, chart_tit
                 hovertemplate='%{text}<extra></extra>',
                 text=hover_text
             ))
-            
+
         except Exception as e:
             print(f"Error processing {ticker}: {e}")
             continue
-    
+
     # Simple layout
     fig.update_layout(
         title=chart_title,
@@ -94,8 +102,9 @@ def create_etf_performance_chart(etf_recommend_df, data, time_horizon, chart_tit
         hovermode='closest',
         height=400
     )
-    
+
     return fig
+
 
 # Initialize session state
 if 'step' not in st.session_state:
@@ -289,7 +298,7 @@ elif st.session_state.step == 7:
             etf_metrics = get_etf_data(
                 md_tolerable_list, user[USER_TIME_HORIZON], data, end_date)
             risk_free_data = fetch_risk_free_boc("1995-01-01")
-            
+
             # Calculate both Sharpe and Utility recommendations
             etf_sharpe_calculation = sharpe_score(
                 etf_metrics, user[USER_TIME_HORIZON], risk_free_data)
@@ -302,29 +311,29 @@ elif st.session_state.step == 7:
                 etf_utility_calculation, 'Utility_Score')
 
             st.success("✅ Analysis complete!")
-            
+
             # Create two columns for side-by-side charts
             col1, col2 = st.columns(2)
-            
+
             with col1:
                 st.subheader("📈 Sharpe Ratio Based")
                 if not etf_sharpe_recommend.empty:
                     sharpe_chart = create_etf_performance_chart(
-                        etf_sharpe_recommend, 
-                        data, 
+                        etf_sharpe_recommend,
+                        data,
                         user[USER_TIME_HORIZON],
                         f"Top 5 ETFs by Sharpe Ratio ({user[USER_TIME_HORIZON]} Years)"
                     )
                     st.plotly_chart(sharpe_chart, use_container_width=True)
                 else:
                     st.warning("No Sharpe-based ETFs found.")
-            
+
             with col2:
                 st.subheader("⚖️ Utility Score Based")
                 if not etf_utility_recommend.empty:
                     utility_chart = create_etf_performance_chart(
-                        etf_utility_recommend, 
-                        data, 
+                        etf_utility_recommend,
+                        data,
                         user[USER_TIME_HORIZON],
                         f"Top 5 ETFs by Utility Score ({user[USER_TIME_HORIZON]} Years)"
                     )
@@ -334,27 +343,33 @@ elif st.session_state.step == 7:
 
             # Show simplified metrics tables below
             st.subheader("📊 Detailed Metrics Comparison")
-            
+
             # Create simplified dataframes with only requested columns
             growth_col = f'Annual_Growth_{user[USER_TIME_HORIZON]}Y'
             std_col = f'Standard_Deviation_{user[USER_TIME_HORIZON]}Y'
-            
+
             col1, col2 = st.columns(2)
             with col1:
                 st.write("**Sharpe Ratio Recommendations:**")
                 if not etf_sharpe_recommend.empty:
-                    sharpe_simple = etf_sharpe_recommend[['Ticker', growth_col, std_col]].reset_index(drop=True)
-                    sharpe_simple.columns = ['Ticker', 'Annual Growth (%)', 'Standard Deviation (%)']
-                    st.dataframe(sharpe_simple, use_container_width=True, hide_index=True)
+                    sharpe_simple = etf_sharpe_recommend[[
+                        'Ticker', growth_col, std_col]].reset_index(drop=True)
+                    sharpe_simple.columns = [
+                        'Ticker', 'Annual Growth (%)', 'Standard Deviation (%)']
+                    st.dataframe(
+                        sharpe_simple, use_container_width=True, hide_index=True)
                 else:
                     st.write("No data available")
-            
+
             with col2:
                 st.write("**Utility Score Recommendations:**")
                 if not etf_utility_recommend.empty:
-                    utility_simple = etf_utility_recommend[['Ticker', growth_col, std_col]].reset_index(drop=True)
-                    utility_simple.columns = ['Ticker', 'Annual Growth (%)', 'Standard Deviation (%)']
-                    st.dataframe(utility_simple, use_container_width=True, hide_index=True)
+                    utility_simple = etf_utility_recommend[[
+                        'Ticker', growth_col, std_col]].reset_index(drop=True)
+                    utility_simple.columns = [
+                        'Ticker', 'Annual Growth (%)', 'Standard Deviation (%)']
+                    st.dataframe(utility_simple,
+                                 use_container_width=True, hide_index=True)
                 else:
                     st.write("No data available")
 
