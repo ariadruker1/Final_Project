@@ -1,15 +1,20 @@
-import pandas as pd
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from core.scoring.sharpe_recommendation import sharpe_score
+from core.scoring.custom_score import utility_score
+from core.scoring.etf_recommendation_evaluation import top_5_recommend
+from core.data_processing.risk_free_rates import fetch_risk_free_boc
+from visualization.visualizing_etf_metrics import plot_risk_return_user
+from core.data_processing.Etf_Data import get_etf_data, filter_etf_data
+from core.analysis.max_drawdown import calculate_max_drawdown
 from datetime import datetime
-from max_drawdown import calculate_max_drawdown
-from Etf_Data import get_etf_data, filter_etf_data
-from visualizing_etf_metrics import plot_risk_return_user
-from risk_free_rates import fetch_risk_free_boc
-from etf_recommendation_evaluation import top_5_recommend
-from custom_score import utility_score
-from sharpe_recommendation import sharpe_score
+import pandas as pd
+
 
 def recommendation_test(
-    time_horizon, desired_growth, std_deviation, max_drawdown, 
+    time_horizon, desired_growth, std_deviation, max_drawdown,
     minimum_etf_age, risk_preference, valid_tickers, data, test_period
 ):
     """
@@ -33,23 +38,36 @@ def recommendation_test(
     today = pd.Timestamp(datetime.now())
     train_end = today - pd.DateOffset(years=test_period)
 
+<<<<<<< HEAD:Code/recommendation_test.py
     md_tolerable_list = calculate_max_drawdown(max_drawdown, minimum_etf_age, valid_tickers, data, train_end)
     etf_metrics = get_etf_data(md_tolerable_list, time_horizon, data, train_end)
+=======
+    md_tolerable_list = calculate_max_drawdown(
+        max_drawdown, minimum_etf_age, valid_tickers, data, train_end)
+    etf_metrics = get_etf_data(
+        md_tolerable_list, time_horizon, data, train_end)
+    quadrant_ideal_etfs = filter_etf_data(
+        etf_metrics, desired_growth, std_deviation, time_horizon)
+>>>>>>> c219ad54c081057c1dd780e61c6aede4d5fad20a:Code/testing/recommendation_test.py
     risk_free_data = fetch_risk_free_boc("1995-01-01")
 
-    etf_utility_calculation = utility_score(etf_metrics, time_horizon, risk_free_data, risk_preference)
+    etf_utility_calculation = utility_score(
+        etf_metrics, time_horizon, risk_free_data, risk_preference)
 
     if 'Utility_Score' in etf_utility_calculation.columns:
         custom_clean = etf_utility_calculation.dropna(subset=['Utility_Score'])
-        custom_recommended_list = top_5_recommend(custom_clean, 'Utility_Score')['Ticker'].tolist() if not custom_clean.empty else []
+        custom_recommended_list = top_5_recommend(custom_clean, 'Utility_Score')[
+            'Ticker'].tolist() if not custom_clean.empty else []
     else:
         custom_recommended_list = []
 
-    sharpe_scoring_calculation = sharpe_score(etf_metrics, time_horizon, risk_free_data)
+    sharpe_scoring_calculation = sharpe_score(
+        etf_metrics, time_horizon, risk_free_data)
 
     if 'Sharpe' in sharpe_scoring_calculation.columns:
         sharpe_clean = sharpe_scoring_calculation.dropna(subset=['Sharpe'])
-        sharpe_recommended_list = top_5_recommend(sharpe_clean, 'Sharpe')['Ticker'].tolist() if not sharpe_clean.empty else []
+        sharpe_recommended_list = top_5_recommend(sharpe_clean, 'Sharpe')[
+            'Ticker'].tolist() if not sharpe_clean.empty else []
     else:
         sharpe_recommended_list = []
 

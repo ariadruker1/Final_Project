@@ -1,10 +1,23 @@
-import pandas as pd
-import itertools
+from testing.compare_custom_Sharpe_test_results import quantitative_etf_basket_comparison
+from testing.recommendation_test import recommendation_test
+# if needed, override this with manual profiles
+from core.user.user_profile import getUserProfile
+from core.data_processing.ishares_ETF_list import download_valid_data
 from datetime import datetime
+<<<<<<< HEAD:Code/test_all_user_profiles.py
 from ishares_ETF_list import download_valid_data
 from risk_free_rates import fetch_risk_free_boc
 from recommendation_test import recommendation_test
 from compare_custom_Sharpe_test_results import quantitative_etf_basket_comparison
+=======
+import itertools
+import pandas as pd
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+>>>>>>> c219ad54c081057c1dd780e61c6aede4d5fad20a:Code/testing/test_all_user_profiles.py
 # Constants for index access
 USER_TIME_HORIZON = 0
 USER_DESIRED_GROWTH = 1
@@ -12,6 +25,7 @@ USER_FLUCTUATION = 2
 USER_WORST_CASE = 3
 USER_MINIMUM_ETF_AGE = 4
 USER_RISK_PREFERENCE = 5
+
 
 def generate_all_user_tests():
     valid_tickers, data = download_valid_data()
@@ -39,8 +53,10 @@ def generate_all_user_tests():
                 valid_tickers, data, test_period
             )
 
-            print(f"Custom recommended ETFs (count {len(custom_list)}): {custom_list}")
-            print(f"Sharpe recommended ETFs (count {len(sharpe_list)}): {sharpe_list}")
+            print(
+                f"Custom recommended ETFs (count {len(custom_list)}): {custom_list}")
+            print(
+                f"Sharpe recommended ETFs (count {len(sharpe_list)}): {sharpe_list}")
 
             if not custom_list or not sharpe_list:
                 print("Skipping due to empty recommendation list")
@@ -82,7 +98,15 @@ def generate_all_user_tests():
 
     if not rows:
         print("No valid data rows collected to write to Excel.")
+<<<<<<< HEAD:Code/test_all_user_profiles.py
         return None
+=======
+    else:
+        df = pd.DataFrame(rows)
+        df.to_excel(
+            '~/Desktop/all_users_etf_sharpe_custom_compare.xlsx', index=False)
+        print(f"Saved results with {len(df)} rows to Excel.")
+>>>>>>> c219ad54c081057c1dd780e61c6aede4d5fad20a:Code/testing/test_all_user_profiles.py
 
     df = pd.DataFrame(rows)
     print(df.head(85))
@@ -90,4 +114,9 @@ def generate_all_user_tests():
     print(f"Saved results with {len(df)} rows to Excel.")
     return rows
 
+<<<<<<< HEAD:Code/test_all_user_profiles.py
 generate_all_user_tests()
+=======
+
+generate_all_user_tests()
+>>>>>>> c219ad54c081057c1dd780e61c6aede4d5fad20a:Code/testing/test_all_user_profiles.py
