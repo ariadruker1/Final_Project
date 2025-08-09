@@ -3,12 +3,12 @@ import pandas
 from sklearn.neighbors import KDTree
 from sklearn.preprocessing import StandardScaler
 
+
 def kdtree_nearest_5_etfs(user_growth, user_std, df, time_horizon, k):
     std_col = f'Standard_Deviation_{time_horizon}Y'
     growth_col = f'Annual_Growth_{time_horizon}Y'
 
     df_clean = df.dropna(subset=[std_col, growth_col])
-    print(f"Number of valid ETFs after dropping NaNs: {len(df_clean)}")
     df_clean['_std_flipped'] = -df_clean[std_col]
     df_clean['_growth'] = df_clean[growth_col]
     std_growth_data = df_clean[['_std_flipped', '_growth']].to_numpy()

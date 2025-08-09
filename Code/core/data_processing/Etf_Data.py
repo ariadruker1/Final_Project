@@ -1,8 +1,10 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
+import streamlit as st
 
 
+@st.cache_data(ttl=86400, show_spinner=False)
 def get_etf_data(tickers, time_horizon, all_data, end_date):
     """
     Get annual growth and standard deviation for multiple time periods for all ETFs
@@ -15,7 +17,6 @@ def get_etf_data(tickers, time_horizon, all_data, end_date):
     """
     start_date = end_date - pd.DateOffset(years=time_horizon)
     results = []
-    print(f"Processing {len(tickers)} ETFs...")
 
     # Filter time period
     period_data = all_data[all_data.index >= start_date]
@@ -36,11 +37,12 @@ def get_etf_data(tickers, time_horizon, all_data, end_date):
                     # Find the start and end price to calculate compound annual growth rate
                     start_price = ticker_data.iloc[0]
                     end_price = ticker_data.iloc[-1]
-                    actual_days = (ticker_data.index[-1] - ticker_data.index[0]).days
+                    actual_days = (
+                        ticker_data.index[-1] - ticker_data.index[0]).days
                     actual_years = actual_days / 365.25
 
-                    annual_growth = ((end_price / start_price) ** (1 / actual_years) - 1) * 100
-            
+                    annual_growth = ((end_price / start_price)
+                                     ** (1 / actual_years) - 1) * 100
 
                     # calculate annual standard deviation
                     daily_returns = ticker_data.pct_change().dropna()
@@ -55,6 +57,7 @@ def get_etf_data(tickers, time_horizon, all_data, end_date):
         results.append(row)
 
     return pd.DataFrame(results)
+
 
 def filter_etf_data(data, user_return, user_risk, user_time_horizon):
     """
@@ -79,7 +82,7 @@ def filter_etf_data(data, user_return, user_risk, user_time_horizon):
         ]
 
     if len(filtered_data) < 5:
-        #return all etfs
+        # return all etfs
         return data
 
     return filtered_data.reset_index(drop=True)

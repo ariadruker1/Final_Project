@@ -1,6 +1,9 @@
 import requests
 import pandas as pd
+import streamlit as st
 
+
+@st.cache_data(ttl=604800, show_spinner=False)
 def fetch_risk_free_boc(start_date="1995-01-01"):
     """
     Downloads 3-month Treasury Bill secondary-market average yield from the Bank of Canada Valet API
@@ -12,16 +15,19 @@ def fetch_risk_free_boc(start_date="1995-01-01"):
         response.raise_for_status()
     except requests.HTTPError as e:
         # surface the HTTP error with context
-        raise RuntimeError(f"Failed to fetch BoC data: {e}. Response text: {response.text[:500]}") from e
+        raise RuntimeError(
+            f"Failed to fetch BoC data: {e}. Response text: {response.text[:500]}") from e
 
     try:
         payload = response.json()
     except ValueError as e:
-        raise RuntimeError(f"Response not valid JSON. Raw content starts with: {response.text[:500]}") from e
+        raise RuntimeError(
+            f"Response not valid JSON. Raw content starts with: {response.text[:500]}") from e
 
     observations = payload.get("observations")
     if not observations:
-        raise RuntimeError(f"No observations in API response. Full payload: {payload}")
+        raise RuntimeError(
+            f"No observations in API response. Full payload: {payload}")
 
     # Attempt to auto-detect the series key (should be 'V39079')
     sample = observations[0]
@@ -58,5 +64,5 @@ def fetch_risk_free_boc(start_date="1995-01-01"):
         )
 
     df = pd.DataFrame(rows).set_index("date").sort_index()
-    df_daily = df.copy() 
+    df_daily = df.copy()
     return df_daily

@@ -4,28 +4,26 @@ import os
 # Add the parent directory (Code) to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from datetime import datetime
-import plotly.graph_objects as go
-import pandas as pd
-import streamlit as st
-
+from core.data_processing.ishares_ETF_list import download_valid_data
+from core.data_processing.Etf_Data import get_etf_data, filter_etf_data
+from core.analysis.max_drawdown import calculate_max_drawdown
+from core.scoring.etf_recommendation_evaluation import top_5_recommend
+from core.scoring.utility_score import utility_score
+from core.scoring.sharpe_recommendation import sharpe_score
+from core.data_processing.risk_free_rates import fetch_risk_free_boc
+from testing.recommendation_test import recommendation_test
+from testing.compare_custom_Sharpe_test_results import quantitative_etf_basket_comparison
+from visualization.chart_training_test_performances import plot_etf_performance_with_user_preferences
 from config.constants import (
     USER_TIME_HORIZON, USER_DESIRED_GROWTH, USER_FLUCTUATION,
     USER_WORST_CASE, USER_MINIMUM_ETF_AGE, USER_RISK_PREFERENCE,
     TIME_HORIZON_OPTIONS, DESIRED_GROWTH_OPTIONS, FLUCTUATION_OPTIONS,
     WORSE_CASE_OPTIONS, MINIMUM_ETF_AGE_OPTIONS, RISK_PREFERENCE_OPTIONS
 )
-from visualization.chart_training_test_performances import plot_etf_performance_with_user_preferences
-from testing.compare_custom_Sharpe_test_results import quantitative_etf_basket_comparison
-from testing.recommendation_test import recommendation_test
-from core.data_processing.risk_free_rates import fetch_risk_free_boc
-from core.scoring.sharpe_recommendation import sharpe_score
-from core.scoring.utility_score import utility_score
-from core.scoring.etf_recommendation_evaluation import top_5_recommend
-from core.analysis.max_drawdown import calculate_max_drawdown
-from core.data_processing.Etf_Data import get_etf_data, filter_etf_data
-from core.data_processing.ishares_ETF_list import download_valid_data
-
+import streamlit as st
+import pandas as pd
+import plotly.graph_objects as go
+from datetime import datetime
 
 
 def create_etf_performance_chart(etf_recommend_df, data, time_horizon, chart_title):
@@ -51,7 +49,7 @@ def create_etf_performance_chart(etf_recommend_df, data, time_horizon, chart_tit
                 try:
                     price_series = data[ticker].dropna()
                 except (KeyError, TypeError):
-                    print(f"Error: Cannot find price data for {ticker}")
+                    # Skip ETFs with missing price data
                     continue
 
             # Filter to the time horizon
@@ -91,7 +89,7 @@ def create_etf_performance_chart(etf_recommend_df, data, time_horizon, chart_tit
             ))
 
         except Exception as e:
-            print(f"Error processing {ticker}: {e}")
+            # Skip ETFs that can't be processed
             continue
 
     # Simple layout
@@ -144,10 +142,12 @@ if st.session_state.step == 1:
         key="q1"
     )
 
-    if st.button("Next", key="next1"):
-        st.session_state.user_profile[USER_TIME_HORIZON] = time_horizon_options[choice - 1]
-        st.session_state.step = 2
-        st.rerun()
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col1:  # Center column for single button
+        if st.button("Next", key="next1"):
+            st.session_state.user_profile[USER_TIME_HORIZON] = time_horizon_options[choice - 1]
+            st.session_state.step = 2
+            st.rerun()
 
 elif st.session_state.step == 2:
     st.subheader("Growth Goals")
@@ -164,12 +164,12 @@ elif st.session_state.step == 2:
         key="q2"
     )
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
         if st.button("Back", key="back2"):
             st.session_state.step = 1
             st.rerun()
-    with col2:
+    with col3:
         if st.button("Next", key="next2"):
             st.session_state.user_profile[USER_DESIRED_GROWTH] = desired_growth_options[choice - 1]
             st.session_state.step = 3
@@ -190,12 +190,12 @@ elif st.session_state.step == 3:
         key="q3"
     )
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
         if st.button("Back", key="back3"):
             st.session_state.step = 2
             st.rerun()
-    with col2:
+    with col3:
         if st.button("Next", key="next3"):
             st.session_state.user_profile[USER_FLUCTUATION] = fluctuation_options[choice - 1]
             st.session_state.step = 4
@@ -216,12 +216,12 @@ elif st.session_state.step == 4:
         key="q4"
     )
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
         if st.button("Back", key="back4"):
             st.session_state.step = 3
             st.rerun()
-    with col2:
+    with col3:
         if st.button("Next", key="next4"):
             st.session_state.user_profile[USER_WORST_CASE] = worse_case_options[choice - 1]
             st.session_state.step = 5
@@ -242,12 +242,12 @@ elif st.session_state.step == 5:
         key="q5"
     )
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
         if st.button("Back", key="back5"):
             st.session_state.step = 4
             st.rerun()
-    with col2:
+    with col3:
         if st.button("Next", key="next5"):
             st.session_state.user_profile[USER_MINIMUM_ETF_AGE] = minimum_etf_age[choice - 1]
             st.session_state.step = 6
@@ -268,12 +268,12 @@ elif st.session_state.step == 6:
         key="q6"
     )
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
         if st.button("Back", key="back6"):
             st.session_state.step = 5
             st.rerun()
-    with col2:
+    with col3:
         if st.button("Get My Recommendations", key="final", type="primary"):
             st.session_state.user_profile[USER_RISK_PREFERENCE] = risk_preference[choice - 1]
             st.session_state.step = 7
