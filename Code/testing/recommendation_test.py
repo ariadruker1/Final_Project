@@ -38,17 +38,10 @@ def recommendation_test(
     today = pd.Timestamp(datetime.now())
     train_end = today - pd.DateOffset(years=test_period)
 
-<<<<<<< HEAD:Code/recommendation_test.py
-    md_tolerable_list = calculate_max_drawdown(max_drawdown, minimum_etf_age, valid_tickers, data, train_end)
-    etf_metrics = get_etf_data(md_tolerable_list, time_horizon, data, train_end)
-=======
     md_tolerable_list = calculate_max_drawdown(
         max_drawdown, minimum_etf_age, valid_tickers, data, train_end)
     etf_metrics = get_etf_data(
         md_tolerable_list, time_horizon, data, train_end)
-    quadrant_ideal_etfs = filter_etf_data(
-        etf_metrics, desired_growth, std_deviation, time_horizon)
->>>>>>> c219ad54c081057c1dd780e61c6aede4d5fad20a:Code/testing/recommendation_test.py
     risk_free_data = fetch_risk_free_boc("1995-01-01")
 
     etf_utility_calculation = utility_score(
