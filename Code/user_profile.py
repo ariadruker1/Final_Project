@@ -16,10 +16,11 @@ def get_choice(prompt, options):
 def getUserProfile():
     time_horizon_options = [1, 4, 8, 15, 25]
     desired_growth_options = [2, 5, 10, 16, 21]
-    fluctuation_options = [5, 10, 15, 20, 60]
+    fluctuation_options = [5, 10, 15, 20, 35]
     worse_case_options = [15, 25, 35, 45, 100]
     minimum_etf_age = [10, 5, 3, 1, 0]
     risk_preference = [[3, 1], [2, 1], [1, 1], [1, 2], [1, 3]]
+
     print("\nHello and welcome to ETF Navigator!\nPlease answer the following questions...")
 
     user_time_horizon = get_choice(
@@ -54,6 +55,5 @@ def getUserProfile():
         '\n6. How would you rate your preferences for risk vs return (1/2/3/4/5):\n'
         '\t1) Risk Averse (3:1)\n\t2) Risk Conscious (2:1)\n\t3) Balanced (1:1)\n\t4) Returns Prioritized (1:2)\n\t5) Return Focused (1:3)\n',
         risk_preference)
-    
 
     return [user_time_horizon, user_desired_growth, user_fluctuation, user_worst_case, user_minimum_efs_age, user_risk_preference]

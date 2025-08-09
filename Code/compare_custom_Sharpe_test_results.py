@@ -8,8 +8,7 @@ def quantitative_etf_basket_comparison(
     custom_tickers,
     sharpe_tickers,
     user_growth,
-    user_std,
-    user_risk_preference,  # [risk_weight, return_weight]
+    user_std,  # [risk_weight, return_weight]
     test_start,
     test_end=None,
     risk_free_rate=0.02,

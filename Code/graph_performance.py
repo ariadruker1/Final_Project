@@ -3,7 +3,7 @@ import matplotlib.colors as mcolors
 import pandas as pd
 import numpy as np
 
-def plot_annual_growth_rate(
+def graph_annual_growth_rate(
     data, 
     custom_recommend_list, 
     sharpe_recommend_list,
@@ -75,7 +75,10 @@ def plot_annual_growth_rate(
 
         # Convert slope of log price to annual growth % (exp(slope) - 1)*100
         annual_growth_rate = (np.exp(rolling_slope) - 1) * 100
-
+        if not annual_growth_rate.empty:
+            latest_growth = annual_growth_rate.iloc[-1]
+            print(f"{etf}: {latest_growth:.2f}% annual growth")
+        
         # Plot annual growth rate curve with label only once per category
         plt.plot(annual_growth_rate.index, annual_growth_rate.values, label=label if label else "", color=color, alpha=0.8)
 

@@ -35,7 +35,6 @@ def recommendation_test(
 
     md_tolerable_list = calculate_max_drawdown(max_drawdown, minimum_etf_age, valid_tickers, data, train_end)
     etf_metrics = get_etf_data(md_tolerable_list, time_horizon, data, train_end)
-    quadrant_ideal_etfs = filter_etf_data(etf_metrics, desired_growth, std_deviation, time_horizon)
     risk_free_data = fetch_risk_free_boc("1995-01-01")
 
     etf_utility_calculation = utility_score(etf_metrics, time_horizon, risk_free_data, risk_preference)

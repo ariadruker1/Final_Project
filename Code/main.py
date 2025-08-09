@@ -6,13 +6,13 @@ from datetime import datetime
 from ishares_ETF_list import download_valid_data
 from user_profile import getUserProfile
 from max_drawdown import calculate_max_drawdown
-from Etf_Data import get_etf_data, filter_etf_data
+from Etf_Data import get_etf_data
 from visualizing_etf_metrics import plot_risk_return_user
 from risk_free_rates import fetch_risk_free_boc
 from etf_recommendation_evaluation import top_5_recommend
 from custom_score import utility_score
 from recommendation_test import recommendation_test
-from graph_performance import plot_annual_growth_rate
+from graph_performance import graph_annual_growth_rate
 from compare_custom_Sharpe_test_results import quantitative_etf_basket_comparison
 from sharpe_recommendation import sharpe_score
 
@@ -27,33 +27,37 @@ def main():
     valid_tickers, data = download_valid_data()
     user = getUserProfile()
     end_date = pd.Timestamp(datetime.now())
-    # md_tolerable_list = calculate_max_drawdown(user[USER_WORST_CASE], user[USER_MINIMUM_ETF_AGE], valid_tickers, data, end_date)
-    # etf_metrics = get_etf_data(md_tolerable_list, user[USER_TIME_HORIZON], data, end_date)
-    # quadrant_ideal_etfs = filter_etf_data(etf_metrics, user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], user[USER_TIME_HORIZON])
-    # risk_free_data = fetch_risk_free_boc("1995-01-01")
-    # etf_utility_calculation = utility_score(quadrant_ideal_etfs, user[USER_TIME_HORIZON], risk_free_data, user[USER_RISK_PREFERENCE])
-    # etf_utility_recommend = top_5_recommend(etf_utility_calculation, 'Utility_Score')
-    # print(etf_utility_recommend)
-    # plot_risk_return_user(quadrant_ideal_etfs, user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], user[USER_TIME_HORIZON], f'FULL DATA: ETF Risk-Return Space with User Profile (Time Horizon = {user[USER_TIME_HORIZON]}Y)')
+    md_tolerable_list = calculate_max_drawdown(user[USER_WORST_CASE], user[USER_MINIMUM_ETF_AGE], valid_tickers, data, end_date)
+    etf_metrics = get_etf_data(md_tolerable_list, user[USER_TIME_HORIZON], data, end_date)
+    risk_free_data = fetch_risk_free_boc("1995-01-01")
+    etf_utility_calculation = utility_score(etf_metrics, user[USER_TIME_HORIZON], risk_free_data, user[USER_RISK_PREFERENCE])
+    etf_utility_recommend = top_5_recommend(etf_utility_calculation, 'Utility_Score')
+    etf_sharpe_recommend = top_5_recommend(sharpe_score(etf_metrics, user[USER_TIME_HORIZON], risk_free_data), 'Sharpe')
+    print(etf_utility_recommend)
+    print(etf_sharpe_recommend)
+    plot_risk_return_user(
+        etf_metrics,
+        user[USER_DESIRED_GROWTH],
+        user[USER_FLUCTUATION],
+        user[USER_TIME_HORIZON],
+        f'ETF Risk-Return Space with User Profile (Time Horizon = {user[USER_TIME_HORIZON]}Y)',
+        set(etf_sharpe_recommend['Ticker']),
+        set(etf_utility_recommend['Ticker']),
+        user[USER_RISK_PREFERENCE], user[USER_MINIMUM_ETF_AGE], user[USER_RISK_PREFERENCE]
+    )
     test_period = 2
     custom_recommended_list, sharpe_recommended_list = recommendation_test(
         user[USER_TIME_HORIZON], user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], 
         user[USER_WORST_CASE], user[USER_MINIMUM_ETF_AGE], user[USER_RISK_PREFERENCE], 
         valid_tickers, data, test_period
     )
-    train_start = end_date - pd.DateOffset(years=test_period) - pd.DateOffset(years=user[USER_TIME_HORIZON])
     test_start = end_date - pd.DateOffset(years=test_period)
     results = quantitative_etf_basket_comparison(
         data, custom_recommended_list, sharpe_recommended_list, user[USER_DESIRED_GROWTH], 
-        user[USER_FLUCTUATION], user[USER_RISK_PREFERENCE], test_start, end_date)
+        user[USER_FLUCTUATION], test_start, end_date, risk_free_data['yield_pct'].mean())
     print("COMPARISON:")
     print(results)
-    (
-        data, custom_recommended_list, sharpe_recommended_list, test_period, 
-        user[USER_TIME_HORIZON], user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION], 
-        user[USER_WORST_CASE], user[USER_MINIMUM_ETF_AGE], user[USER_RISK_PREFERENCE]
-    )
-    plot_annual_growth_rate(
+    graph_annual_growth_rate(
         data, 
         custom_recommended_list, 
         sharpe_recommended_list,
