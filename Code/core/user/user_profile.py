@@ -31,7 +31,7 @@ def getUserProfile():
     user_desired_growth = get_choice(
         '\n2. What are your annual growth goals? (1/2/3/4/5):\n'
         '\t1) Beat inflation (<3%)\n\t2) Modest and reliable (3-7%)\n\t3) Steady longterm (8-12%)\n'
-        '\t4) Strong returns with moderate risk (13-20%)\n\t5) High growth with greater risk (>20%+)\n',
+        '\t4) Strong returns with moderate risk (13-20%)\n\t5) High growth with greater risk (>20%)\n',
         desired_growth_options)
 
     user_fluctuation = get_choice(
@@ -48,7 +48,7 @@ def getUserProfile():
     
     user_minimum_efs_age = get_choice(
         '\n5. What is the minimum amount of time you would like the ETF to have existed for? (The older the ETF the more reliable the range of data) (1/2/3/4/5):\n'
-        '\t1) Very Established (>10 years)\n\t2) Experienced some variation (>5 years)\n\t3) Newer is okay (>3 years)\n\t4) I don\'t mind less data (>1 year)\n\t5) I want all options (up to present)\n',
+        '\t1) Very Established (>10 years)\n\t2) Moderately Established (>5 years)\n\t3) Relatively New (>3 years)\n\t4) New and Emerging (>1 year)\n\t5) No Minimimum Age (All Available ETFs)\n',
         minimum_etf_age)
     
     user_risk_preference = get_choice(

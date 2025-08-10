@@ -110,12 +110,12 @@ if 'user_profile' not in st.session_state:
     st.session_state.user_profile = [None] * 6
 
 st.title("ETF Recommendations")
-st.write("Answer a few questions to get personalized ETF recommendations.")
+st.write("Answer a few questions to get personalized ETF recommendations.*")
 
 # Define options
 time_horizon_options = [1, 4, 8, 15, 25]
 desired_growth_options = [2, 5, 10, 16, 21]
-fluctuation_options = [5, 10, 15, 20, 60]
+fluctuation_options = [5, 10, 15, 20, 35]
 worse_case_options = [15, 25, 35, 45, 100]
 minimum_etf_age = [10, 5, 3, 1, 0]
 risk_preference = [[3, 1], [2, 1], [1, 1], [1, 2], [1, 3]]
@@ -128,10 +128,16 @@ if st.session_state.step <= 6:
 
 if st.session_state.step == 1:
     st.subheader("Time Horizon")
+    st.markdown(
+    "<small style='color:gray;'>This means how long you plan to keep your money invested. If you want to use it soon, you might choose safer options. If you’re okay waiting a long time, you can handle more risk for bigger rewards.</small>",
+    unsafe_allow_html=True
+)
+    options = ["Select a Time Horizon", 1, 2, 3, 4, 5]
     choice = st.selectbox(
         "What is your investment time horizon?",
-        options=[1, 2, 3, 4, 5],
+        options=options,
         format_func=lambda x: {
+            "Select a Time Horizon": "Select a Time Horizon",
             1: "0-2 years",
             2: "3-5 years",
             3: "6-10 years",
@@ -142,18 +148,27 @@ if st.session_state.step == 1:
     )
 
     col1, col2, col3 = st.columns([1, 1, 1])
-    with col1:  # Center column for single button
+    with col1:
         if st.button("Next", key="next1"):
-            st.session_state.user_profile[USER_TIME_HORIZON] = time_horizon_options[choice - 1]
-            st.session_state.step = 2
-            st.rerun()
+            if choice == "Select a Time Horizon":
+                st.warning("Please select a time horizon to proceed.")
+            else:
+                st.session_state.user_profile[USER_TIME_HORIZON] = time_horizon_options[choice - 1]
+                st.session_state.step = 2
+                st.rerun()
 
 elif st.session_state.step == 2:
     st.subheader("Growth Goals")
+    st.markdown(
+        "<small style='color:gray;'>This is how much you want your money to grow each year. Bigger growth means more chance of making money but also more risk you could lose some.</small>",
+        unsafe_allow_html=True
+    )
+    options = ["Select Growth Goal", 1, 2, 3, 4, 5]
     choice = st.selectbox(
         "What are your annual growth goals?",
-        options=[1, 2, 3, 4, 5],
+        options=options,
         format_func=lambda x: {
+            "Select Growth Goal": "Select Growth Goal",
             1: "Beat inflation (<3%)",
             2: "Modest and reliable (3-7%)",
             3: "Steady longterm (8-12%)",
@@ -170,16 +185,25 @@ elif st.session_state.step == 2:
             st.rerun()
     with col3:
         if st.button("Next", key="next2"):
-            st.session_state.user_profile[USER_DESIRED_GROWTH] = desired_growth_options[choice - 1]
-            st.session_state.step = 3
-            st.rerun()
+            if choice == "Select Growth Goal":
+                st.warning("Please select a growth goal to proceed.")
+            else:
+                st.session_state.user_profile[USER_DESIRED_GROWTH] = desired_growth_options[choice - 1]
+                st.session_state.step = 3
+                st.rerun()
 
 elif st.session_state.step == 3:
     st.subheader("Risk Tolerance")
+    st.markdown(
+        "<small style='color:gray;'>Sometimes investments go up and down in value. This asks how much ups and downs you can handle without getting worried.</small>",
+        unsafe_allow_html=True
+    )
+    options = ["Select Fluctuation Tolerance", 1, 2, 3, 4, 5]
     choice = st.selectbox(
         "How much annual fluctuation can you tolerate?",
-        options=[1, 2, 3, 4, 5],
+        options=options,
         format_func=lambda x: {
+            "Select Fluctuation Tolerance": "Select Fluctuation Tolerance",
             1: "Not much at all (<5%)",
             2: "Small ups and downs are okay (<10%)",
             3: "Regular market swings (<15%)",
@@ -196,16 +220,25 @@ elif st.session_state.step == 3:
             st.rerun()
     with col3:
         if st.button("Next", key="next3"):
-            st.session_state.user_profile[USER_FLUCTUATION] = fluctuation_options[choice - 1]
-            st.session_state.step = 4
-            st.rerun()
+            if choice == "Select Fluctuation Tolerance":
+                st.warning("Please select your fluctuation tolerance to proceed.")
+            else:
+                st.session_state.user_profile[USER_FLUCTUATION] = fluctuation_options[choice - 1]
+                st.session_state.step = 4
+                st.rerun()
 
 elif st.session_state.step == 4:
     st.subheader("Maximum Loss Tolerance")
+    st.markdown(
+        "<small style='color:gray;'>This is the biggest drop in your investment value you could accept without selling or panicking.</small>",
+        unsafe_allow_html=True
+    )
+    options = ["Select Max Loss Tolerance", 1, 2, 3, 4, 5]
     choice = st.selectbox(
         "In the worst case, what is the greatest loss you could tolerate?",
-        options=[1, 2, 3, 4, 5],
+        options=options,
         format_func=lambda x: {
+            "Select Max Loss Tolerance": "Select Max Loss Tolerance",
             1: "Low (<15%)",
             2: "Minor (<25%)",
             3: "Moderate (<35%)",
@@ -222,21 +255,30 @@ elif st.session_state.step == 4:
             st.rerun()
     with col3:
         if st.button("Next", key="next4"):
-            st.session_state.user_profile[USER_WORST_CASE] = worse_case_options[choice - 1]
-            st.session_state.step = 5
-            st.rerun()
+            if choice == "Select Max Loss Tolerance":
+                st.warning("Please select a maximum loss tolerance to proceed.")
+            else:
+                st.session_state.user_profile[USER_WORST_CASE] = worse_case_options[choice - 1]
+                st.session_state.step = 5
+                st.rerun()
 
 elif st.session_state.step == 5:
     st.subheader("ETF Track Record")
+    st.markdown(
+        "<small style='color:gray;'>Older ETFs have a history of how they performed. New ETFs might be riskier because we don’t know how they’ll do over time.</small>",
+        unsafe_allow_html=True
+    )
+    options = ["Select ETF Age Minimum", 1, 2, 3, 4, 5]
     choice = st.selectbox(
         "What is the minimum time you'd like the ETF to have existed?",
-        options=[1, 2, 3, 4, 5],
+        options=options,
         format_func=lambda x: {
+            "Select ETF Age Minimum": "Select ETF Age Minimum",
             1: "Very Established (>10 years)",
-            2: "Experienced some variation (>5 years)",
-            3: "Newer is okay (>3 years)",
-            4: "I don't mind less data (>1 year)",
-            5: "I want all options (up to present)"
+            2: "Moderately Established (>5 years)",
+            3: "Relatively New (>3 years)",
+            4: "New & Emerging (>1 year)",
+            5: "No Age Minimum (All ETFs)"
         }[x],
         key="q5"
     )
@@ -248,16 +290,25 @@ elif st.session_state.step == 5:
             st.rerun()
     with col3:
         if st.button("Next", key="next5"):
-            st.session_state.user_profile[USER_MINIMUM_ETF_AGE] = minimum_etf_age[choice - 1]
-            st.session_state.step = 6
-            st.rerun()
+            if choice == "Select ETF Age Minimum":
+                st.warning("Please select an ETF age minimum to proceed.")
+            else:
+                st.session_state.user_profile[USER_MINIMUM_ETF_AGE] = minimum_etf_age[choice - 1]
+                st.session_state.step = 6
+                st.rerun()
 
 elif st.session_state.step == 6:
     st.subheader("Risk vs Return Preference")
+    st.markdown(
+        "<small style='color:gray;'>This shows if you want to play it safe (risk averse) or try to get bigger gains even if it’s riskier (return focused).</small>",
+        unsafe_allow_html=True
+    )
+    options = ["Select Risk vs Return Preference", 1, 2, 3, 4, 5]
     choice = st.selectbox(
-        "How would you rate your preference for risk vs return?",
-        options=[1, 2, 3, 4, 5],
+        "How would you weight your preference for risk vs return?",
+        options=options,
         format_func=lambda x: {
+            "Select Risk vs Return Preference": "Select Risk vs Return Preference",
             1: "Risk Averse (3:1)",
             2: "Risk Conscious (2:1)",
             3: "Balanced (1:1)",
@@ -274,9 +325,13 @@ elif st.session_state.step == 6:
             st.rerun()
     with col3:
         if st.button("Get My Recommendations", key="final", type="primary"):
-            st.session_state.user_profile[USER_RISK_PREFERENCE] = risk_preference[choice - 1]
-            st.session_state.step = 7
-            st.rerun()
+            if choice == "Select Risk vs Return Preference":
+                st.warning("Please select a risk vs return preference to proceed.")
+            else:
+                st.session_state.user_profile[USER_RISK_PREFERENCE] = risk_preference[choice - 1]
+                st.session_state.step = 7
+                st.rerun()
+
 
 elif st.session_state.step == 7:
     st.subheader("🎯 Your Personalized ETF Recommendations")
@@ -382,3 +437,10 @@ elif st.session_state.step == 7:
             if st.button("Try Again", key="retry"):
                 st.session_state.step = 1
                 st.rerun()
+st.markdown(
+"<small style='color:gray; margin-top: 2rem; display: block;'>"
+"*This tool provides educational information only and is not financial advice. "
+"Please consult a professional before making any investment decisions."
+"</small>",
+unsafe_allow_html=True
+)
