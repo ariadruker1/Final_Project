@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from core.data_processing.ishares_ETF_list import download_valid_data
 from core.data_processing.Etf_Data import get_etf_data, filter_etf_data
 from core.analysis.max_drawdown import calculate_max_drawdown
-from core.scoring.etf_recommendation_evaluation import top_5_recommend
+from core.scoring.etf_recommendation_evaluation import top_recommend
 from core.scoring.utility_score import utility_score
 from core.scoring.sharpe_recommendation import sharpe_score
 from core.data_processing.risk_free_rates import fetch_risk_free_boc
@@ -356,13 +356,13 @@ elif st.session_state.step == 7:
             # Calculate both Sharpe and Utility recommendations
             etf_sharpe_calculation = sharpe_score(
                 etf_metrics, user[USER_TIME_HORIZON], risk_free_data)
-            etf_sharpe_recommend = top_5_recommend(
-                etf_sharpe_calculation, 'Sharpe')
+            etf_sharpe_recommend = top_recommend(
+                etf_sharpe_calculation, 'Sharpe', 5)
 
             etf_utility_calculation = utility_score(
                 etf_metrics, user[USER_TIME_HORIZON], risk_free_data, user[USER_RISK_PREFERENCE])
-            etf_utility_recommend = top_5_recommend(
-                etf_utility_calculation, 'Utility_Score')
+            etf_utility_recommend = top_recommend(
+                etf_utility_calculation, 'Utility_Score', 5)
 
             st.success("✅ Analysis complete!")
 
