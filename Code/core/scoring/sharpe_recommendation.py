@@ -2,15 +2,26 @@ import pandas as pd
 
 def sharpe_score(etf_df, time_horizon, risk_free_df):
     """
-    Compute Sharpe Ratios and return ETFs sorted by Sharpe Ratio.
+    Calculates the Sharpe Ratio for each ETF and sorts them by the score.
+
+    The Sharpe Ratio measures an ETF's performance by adjusting for its risk.
+    It is calculated by taking the ETF's excess return (annual growth minus
+    the risk-free rate) and dividing it by the ETF's standard deviation.
+    A higher Sharpe Ratio indicates a better risk-adjusted return.
 
     Args:
-        etf_df (pd.DataFrame): DataFrame with annual growth and std deviation columns.
-        time_horizon (int): Time period in years.
-        risk_free_df (pd.DataFrame): DataFrame with 'yield_pct' column indexed by date.
+        etf_df (pd.DataFrame): A DataFrame containing ETF metrics, including
+                               annual growth and standard deviation.
+        time_horizon (int): The time period in years for which the metrics were
+                            calculated.
+        risk_free_df (pd.DataFrame): A DataFrame containing historical risk-free
+                                     rates, used to find the average risk-free
+                                     rate over the specified time horizon.
 
     Returns:
-        pd.DataFrame: ETFs sorted by Sharpe Ratio (descending).
+        pd.DataFrame: The original DataFrame with two new columns, 'ExcessReturn'
+                      and 'Sharpe', sorted in descending order by the 'Sharpe'
+                      ratio.
     """
     growth_col = f'Annual_Growth_{time_horizon}Y'
     std_col = f'Standard_Deviation_{time_horizon}Y'

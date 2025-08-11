@@ -14,6 +14,37 @@ def plot_risk_return_user(
     user_min_etf_age,
     user_max_drawdown
 ):
+    """
+    Creates a scatter plot visualizing the risk and return of ETFs, benchmarked against a user's profile.
+
+    This function generates a scatter plot to compare the historical performance of various ETFs
+    in a risk-return framework. Each ETF is plotted based on its standard deviation (risk)
+    and its annual growth (return). The plot highlights specific ETFs recommended by two
+    different scoring methods (Sharpe and a custom utility score) using distinct colors.
+    A key feature is the inclusion of a marker representing the user's desired risk-return
+    profile and an inset box with a detailed summary of the user's investment preferences.
+
+    Args:
+        etf_metrics_df (pd.DataFrame): A DataFrame containing calculated metrics for ETFs,
+            including columns for standard deviation and annual growth over a specified time horizon.
+        user_growth (float): The user's desired annual growth rate in percentage.
+        user_std (float): The user's acceptable annual standard deviation (risk) in percentage.
+        time_horizon (int): The investment time horizon in years. This is used to
+            dynamically select the correct columns from `etf_metrics_df`.
+        title (str): The title for the plot.
+        sharpe_list (list): A list of ETF ticker symbols recommended by the Sharpe ratio.
+        utility_list (list): A list of ETF ticker symbols recommended by the custom
+            utility scoring algorithm.
+        user_risk_ratio (list): A list of two integers representing the user's
+            weighted preference for return versus risk.
+        user_min_etf_age (int): The minimum age in years for an ETF to be considered.
+        user_max_drawdown (float): The user's maximum tolerated drawdown in percentage.
+
+    Returns:
+        None: This function displays a plot and saves it as 'etf_risk_return.png',
+            but it does not return a value.
+    """
+
     std_col = f'Standard_Deviation_{time_horizon}Y'
     growth_col = f'Annual_Growth_{time_horizon}Y'
 
@@ -89,5 +120,5 @@ def plot_risk_return_user(
 
     # Adjust layout to fit legend on right and user profile below
     plt.tight_layout(rect=[0, 0.15, 0.85, 1])  # less bottom padding for profile box, right for legend
-    plt.savefig('etf_risk_return.png')
+    plt.savefig('user_etf_risk_return.png')
     plt.close() 

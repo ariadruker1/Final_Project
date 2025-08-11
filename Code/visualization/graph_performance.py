@@ -15,6 +15,36 @@ def graph_annual_growth_rate(
     user_etf_age,
     user_risk_pref
 ):
+    """
+    Graphs the rolling annual growth rate of recommended ETFs and compares them to user goals.
+
+    This function creates a plot that visualizes the rolling annual growth rate for
+    a set of recommended ETFs over a specific test period. It color-codes the ETFs
+    based on whether they were recommended by the custom utility score, the Sharpe
+    ratio, or both. The plot also includes a shaded region representing the user's
+    ideal growth rate, providing a clear visual benchmark for evaluating performance.
+    A summary of the user's profile is included on the plot for context.
+
+    Args:
+        data (pd.DataFrame): DataFrame containing historical ETF price data, typically
+            with a MultiIndex for tickers and price types (e.g., 'Adj Close').
+        custom_recommend_list (list): A list of ETF ticker symbols recommended by the
+            custom utility scoring algorithm.
+        sharpe_recommend_list (list): A list of ETF ticker symbols recommended by the
+            Sharpe ratio algorithm.
+        test_period (int): The duration of the test period in years.
+        user_time_horizon (int): The user's investment time horizon in years, used
+            for the plot title.
+        user_growth_pct (int): The user's desired annual growth rate in percentage.
+        user_std_pct (int): The user's acceptable annual standard deviation in percentage.
+        user_max_drawdown (int): The user's maximum tolerated drawdown in percentage.
+        user_etf_age (int): The minimum age of an ETF to be considered.
+        user_risk_pref (list): The risk-return preference weights of the user.
+
+    Returns:
+        None: This function displays a plot and saves it as 'etf_risk_return.png',
+            but it does not return a value.
+    """
     today = pd.Timestamp.now().normalize()
     start_date = today - pd.DateOffset(years=test_period)
     

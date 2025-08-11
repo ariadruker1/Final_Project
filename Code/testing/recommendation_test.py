@@ -20,22 +20,32 @@ def recommendation_test(
     minimum_etf_age, risk_preference, valid_tickers, data, test_period
 ):
     """
-    Generate ETF recommendations based on training period,
-    then return lists of top ETFs by custom utility score and Sharpe ratio.
+    Generates ETF recommendations based on a training period and returns
+    lists of top ETFs from a custom utility score and Sharpe ratio.
+
+    This function simulates the recommendation process by using a specified
+    `test_period` to define a historical training window. It calculates various
+    ETF metrics and scores (utility and Sharpe), and then returns the top
+    recommended tickers from each method for that period.
 
     Args:
-        time_horizon (int): time horizon in years
-        desired_growth (float): user desired growth rate
-        std_deviation (float): user allowed std deviation
-        max_drawdown (float): maximum drawdown allowed
-        minimum_etf_age (int): minimum ETF age in years
-        risk_preference (list): risk preference weights [reward_weight, risk_weight]
-        valid_tickers (list): available ETFs
-        data (pd.DataFrame): price data
-        test_period (int): length of test period in years
+        time_horizon (int): The user's time horizon for investment, in years.
+        desired_growth (float): The user's desired annual growth rate.
+        std_deviation (float): The user's acceptable annual standard deviation.
+        max_drawdown (float): The maximum tolerated drawdown, as a percentage.
+        minimum_etf_age (int): The minimum age of an ETF to be considered, in years.
+        risk_preference (list): A list containing the risk and return
+                                preference weights, e.g., [risk_weight, return_weight].
+        valid_tickers (list): A list of all available ETF tickers.
+        data (pd.DataFrame): A DataFrame containing the historical price data for all ETFs.
+        test_period (int): The length of the back-testing period, in years.
 
     Returns:
-        tuple: (custom_recommended_list, sharpe_recommended_list)
+        tuple: A tuple containing two lists of strings:
+               - `custom_recommended_list` (list of str): Tickers of ETFs recommended
+                 by the custom utility score.
+               - `sharpe_recommended_list` (list of str): Tickers of ETFs recommended
+                 by the Sharpe ratio.
     """
     today = pd.Timestamp(datetime.now())
     train_end = today - pd.DateOffset(years=test_period)

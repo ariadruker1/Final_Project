@@ -1,9 +1,20 @@
 '''
 Aria Druker and Linghe Zhou
 '''
+"""
+ETF Recommendation Engine
+
+This script serves as the main entry point for a Streamlit application that
+recommends ETFs based on a user's financial profile. It processes a predefined
+list of ETFs, analyzes their historical performance, and provides recommendations
+using both a custom utility score and the standard Sharpe ratio. The script
+also includes a quantitative back-testing feature to compare the performance
+of the recommended ETF baskets over a specific period. Additionally there are 
+options for graphing: user and ETFs risk reward profiles, and the post-training
+performance comparison of each recommendation engine.
+"""
 import pandas as pd
 from datetime import datetime
-# Updated imports
 from config.constants import (
     USER_TIME_HORIZON, USER_DESIRED_GROWTH, USER_FLUCTUATION,
     USER_WORST_CASE, USER_MINIMUM_ETF_AGE, USER_RISK_PREFERENCE, TESTING_PERIOD, RECOMMENDATION_COUNT

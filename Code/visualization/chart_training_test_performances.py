@@ -8,9 +8,41 @@ def plot_etf_performance_with_user_preferences(
     user_time_horizon, user_growth_pct, user_std_pct, user_max_drawdown, user_etf_age, user_risk_pref
 ):
     """
-    Plot ETF prices over training and test periods, normalized, with user desired cumulative growth
-    and linear risk bands per ETF starting at that ETF's end of training normalized price,
-    plus a user profile summary and legend below.
+    Plots the normalized performance of recommended ETFs and visualizes the user's financial goals.
+
+    This function creates a detailed matplotlib plot that visualizes the performance of
+    a basket of ETFs over two distinct periods: a historical training period and a
+    subsequent test period. It normalizes the prices to start at a common baseline.
+    The plot also includes a visualization of the user's desired cumulative growth rate
+    and an associated risk band, allowing for a direct comparison of the ETFs'
+    performance against the user's goals. A summary of the user's profile and a
+    custom legend are also included to provide a comprehensive overview.
+
+    Args:
+        data (pd.DataFrame): A DataFrame containing the historical "Adjusted Close"
+            price data for all relevant ETFs. The DataFrame is expected to have a
+            MultiIndex column structure where the first level is the ticker and the
+            second is the price type (e.g., 'Adj Close').
+        custom_tickers (list): A list of ETF ticker symbols recommended by the
+            custom utility scoring algorithm.
+        sharpe_tickers (list): A list of ETF ticker symbols recommended by the
+            Sharpe ratio algorithm.
+        test_period (int): The duration of the test period in years. This period is
+            used to evaluate the performance of the recommended ETFs.
+        user_time_horizon (int): The user's investment time horizon in years.
+        user_growth_pct (float): The user's desired annual growth rate, expressed as
+            a percentage.
+        user_std_pct (float): The user's acceptable annual standard deviation (risk)
+            tolerance, expressed as a percentage.
+        user_max_drawdown (float): The maximum percentage drawdown the user is
+            willing to tolerate.
+        user_etf_age (int): The minimum age in years for an ETF to be considered.
+        user_risk_pref (list): A list of two integers representing the user's
+            weighted preference for return versus risk (e.g., [1, 3] for a 1:3
+            return-to-risk preference).
+
+    Returns:
+        None: This function displays a plot and does not return any value.
     """
     today = pd.Timestamp(datetime.now())
     train_start = today - pd.DateOffset(years=user_time_horizon + test_period)

@@ -6,9 +6,26 @@ import streamlit as st
 @st.cache_data(ttl=604800, show_spinner=False)
 def fetch_risk_free_boc(start_date="1995-01-01"):
     """
-    Downloads 3-month Treasury Bill secondary-market average yield from the Bank of Canada Valet API
-    starting from start_date to today. Returns a business-day interpolated daily risk-free rate DataFrame.
+    Downloads historical 3-month Treasury Bill secondary-market average yield from the Bank of Canada (BoC).
+
+    This function fetches data from the BoC's Valet API for a specified date range,
+    parses the JSON response, and returns a pandas DataFrame. The data is
+    business-day interpolated to provide a daily risk-free rate.
+
+    Args:
+        start_date (str, optional): The start date for the data retrieval in
+                                    'YYYY-MM-DD' format. Defaults to '1995-01-01'.
+
+    Returns:
+        pd.DataFrame: A DataFrame with the daily risk-free rates, indexed by date.
+                      The DataFrame has a single column 'yield_pct' containing the
+                      annualized percentage yield.
+
+    Raises:
+        RuntimeError: If there are issues fetching the data from the API,
+                      the response is not valid JSON, or no observations are found.
     """
+    
     url = f"https://www.bankofcanada.ca/valet/observations/V39079/json?start_date={start_date}"
     response = requests.get(url)
     try:

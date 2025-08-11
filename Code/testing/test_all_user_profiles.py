@@ -1,14 +1,12 @@
 import sys
 import os
-import itertools
-import pandas as pd
-from datetime import datetime
-
-# Add project root to sys.path for imports to work
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from config.constants import (
     TESTING_PERIOD, RECOMMENDATION_COUNT, TOP_RANGE_RECOMMENDATIONS
 )
+import itertools
+import pandas as pd
+from datetime import datetime
 from core.data_processing.ishares_ETF_list import download_valid_data
 from core.analysis.max_drawdown import calculate_max_drawdown
 from core.data_processing.Etf_Data import get_etf_data
@@ -28,6 +26,31 @@ USER_RISK_PREFERENCE = 5
 
 
 def generate_all_user_tests():
+    """
+    Automates the generation and analysis of ETF recommendations for a full
+    range of hypothetical user profiles.
+
+    This function systematically tests the recommendation engine by creating
+    a matrix of all possible user preference combinations from a predefined set
+    of parameters. For each combination, it generates recommendations based on
+    the full dataset and a back-testing period. It then calculates and
+    records metrics such as the overlap between custom and Sharpe recommendations,
+    as well as the consistency between full-time and test-period recommendations.
+    The final results are compiled into a pandas DataFrame and saved to an
+    Excel file for further analysis.
+
+    Args:
+        None: This function does not take any arguments. All test parameters
+              are hard-coded within the function for controlled testing.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the results of all user profile
+                      tests, including the profile parameters, various overlap
+                      metrics, and the recommended tickers for each scenario.
+                      This DataFrame is also saved to an Excel file.
+    """
+
+
     valid_tickers, data = download_valid_data()
     end_date = pd.Timestamp(datetime.now())
 

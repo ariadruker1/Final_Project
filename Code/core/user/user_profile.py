@@ -3,6 +3,21 @@ Asks user to build financial goal profile
 '''
 
 def get_choice(prompt, options):
+    """
+    Prompts the user for a choice and validates the input.
+
+    This helper function ensures that the user's input is a valid integer
+    within the range of available options, re-prompting the user for valid
+    input if an invalid value is entered.
+
+    Args:
+        prompt (str): The text to display to the user as a prompt.
+        options (list): A list of valid options the user can choose from.
+
+    Returns:
+        The selected option from the 'options' list.
+    """
+        
     while True:
         try:
             choice = int(input(prompt))
@@ -14,6 +29,17 @@ def get_choice(prompt, options):
             print("Invalid input. Please enter a valid number.")
 
 def getUserProfile():
+    """
+    Collects a user's investment profile through a series of questions.
+
+    The function presents a number of multiple-choice questions to the user
+    and uses the get_choice helper function to validate their input. The
+    collected preferences are then compiled into a list.
+
+    Returns:
+        list: A list containing the user's selected preferences in a
+              pre-defined order.
+    """
     time_horizon_options = [1, 4, 8, 15, 25]
     desired_growth_options = [2, 5, 10, 16, 21]
     fluctuation_options = [5, 10, 15, 20, 35]

@@ -7,14 +7,24 @@ import streamlit as st
 @st.cache_data(ttl=86400, show_spinner=False)
 def get_etf_data(tickers, time_horizon, all_data, end_date):
     """
-    Get annual growth and standard deviation for multiple time periods for all ETFs
+    Calculates key financial metrics for a list of ETFs over a specified time horizon.
+
+    This function iterates through a list of ETF tickers, calculating the
+    compound annual growth rate (CAGR) and the annualized standard deviation
+    for each one over the given `time_horizon`.
+
     Args:
-    tickers (list): List of ETF tickers to analyze
-    time_horizon (int): Number of years to calculate metrics
-    all_data (pd.DataFrame): DataFrame containing all-time data for all ETFs
+        tickers (list): A list of ETF ticker symbols to analyze.
+        time_horizon (int): The number of years to use for the metric calculation.
+        all_data (pd.DataFrame): A multi-level indexed DataFrame containing historical
+                                 price data for all ETFs, with tickers as the top level.
+        end_date (pd.Timestamp): The final date for the analysis period.
+
     Returns:
-    pd.DataFrame: DataFrame with annual growth and standard deviation for each ETF
+        pd.DataFrame: A DataFrame where each row represents an ETF and includes
+                      its ticker, calculated annual growth, and standard deviation.
     """
+
     start_date = end_date - pd.DateOffset(years=time_horizon)
     results = []
 

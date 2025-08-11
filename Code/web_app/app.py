@@ -1,10 +1,8 @@
-# keep these 3 lines at the top of the file
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from core.data_processing.ishares_ETF_list import download_valid_data
-from core.data_processing.Etf_Data import get_etf_data, filter_etf_data
+from core.data_processing.Etf_Data import get_etf_data
 from core.analysis.max_drawdown import calculate_max_drawdown
 from core.scoring.etf_recommendation_evaluation import top_recommend
 from core.scoring.utility_score import utility_score
