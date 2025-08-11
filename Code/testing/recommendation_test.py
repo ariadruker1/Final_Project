@@ -59,7 +59,7 @@ def recommendation_test(
 
     if 'Sharpe' in sharpe_scoring_calculation.columns:
         sharpe_clean = sharpe_scoring_calculation.dropna(subset=['Sharpe'])
-        sharpe_recommended_list = top_recommend(sharpe_clean, 'Sharpe', )[
+        sharpe_recommended_list = top_recommend(sharpe_clean, 'Sharpe', RECOMMENDATION_COUNT)[
             'Ticker'].tolist() if not sharpe_clean.empty else []
     else:
         sharpe_recommended_list = []

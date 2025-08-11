@@ -35,7 +35,7 @@ def generate_all_user_tests():
     growths = [2, 21]
     stds = [5, 35]
     max_drawdowns = [15, 25, 35, 45, 100]
-    min_etf_ages = [3]
+    min_etf_ages = [0, 3, 10]
     risk_preferences = [[3, 1], [1, 1], [1, 3]]
 
     rows = []
@@ -61,7 +61,7 @@ def generate_all_user_tests():
             full_time_custom_list = full_time_custom_df['Ticker'].tolist()
             full_time_sharpe_list = full_time_sharpe_df['Ticker'].tolist()
 
-            # Get TOP_RANGE_RECOMMENDATIONS (e.g., 10) recommendations for full-time for comparison
+            # Get TOP_RANGE_RECOMMENDATIONS (e.g., 15) recommendations for full-time for comparison
             full_time_custom_top_range_df = top_recommend(utility_scores, 'Utility_Score', TOP_RANGE_RECOMMENDATIONS)
             full_time_sharpe_top_range_df = top_recommend(sharpe_scores, 'Sharpe', TOP_RANGE_RECOMMENDATIONS)
             full_time_custom_top_range_list = full_time_custom_top_range_df['Ticker'].tolist()
@@ -96,7 +96,7 @@ def generate_all_user_tests():
             overlap_full_test_custom = len(set_full_custom & set_test_custom)
             overlap_full_test_sharpe = len(set_full_sharpe & set_test_sharpe)
             
-            # New columns: Test period recommendations vs. Full-time top 10
+            # New columns: Test period recommendations vs. Full-time top 15
             custom_test_in_custom_full_top_range = len(set_test_custom & set_full_custom_top_range)
             sharpe_test_in_sharpe_full_top_range = len(set_test_sharpe & set_full_sharpe_top_range)
 
@@ -110,6 +110,10 @@ def generate_all_user_tests():
             custom_test_time_tickers = ', '.join(custom_list)
             sharpe_full_time_tickers = ', '.join(full_time_sharpe_list)
             sharpe_test_time_tickers = ', '.join(sharpe_list)
+            
+            # New columns for the top 15 lists
+            custom_full_time_top_15 = ', '.join(full_time_custom_top_range_list)
+            sharpe_full_time_top_15 = ', '.join(full_time_sharpe_top_range_list)
 
             # Build final row
             row = {
@@ -129,6 +133,8 @@ def generate_all_user_tests():
                 "custom_test_time_tickers": custom_test_time_tickers,
                 "sharpe_full_time_tickers": sharpe_full_time_tickers,
                 "sharpe_test_time_tickers": sharpe_test_time_tickers,
+                "custom_full_time_top_15": custom_full_time_top_15,
+                "sharpe_full_time_top_15": sharpe_full_time_top_15,
                 "intersection_custom_test_sharpe_test": intersection_custom_test_sharpe_test,
                 "intersection_custom_full_test": intersection_custom_full_test,
                 "intersection_sharpe_full_test": intersection_sharpe_full_test,
@@ -145,7 +151,7 @@ def generate_all_user_tests():
         return None
 
     df = pd.DataFrame(rows)
-    df.to_excel('~/Desktop/all_users_etf_overlap_and_tickers_3yr_test_with_top_10.xlsx', index=False)
+    df.to_excel('~/Desktop/all_users_etf_overlap_and_tickers_1yr_test_with_top_15.xlsx', index=False)
     print(f"Saved results with {len(df)} rows to Excel.")
     return df
 
