@@ -1,4 +1,4 @@
-def top_5_recommend(df, column_title):
+def top_recommend(df, column_title, amount):
     """
     Returns top 5 rows with highest scoring etf data.
 
@@ -18,6 +18,6 @@ def top_5_recommend(df, column_title):
     # Sort descending by Sharpe ratio
     df_sorted = df_clean.sort_values(by=column_title, ascending=False)
 
-    result = df_sorted.head(5)
+    result = df_sorted.head(amount)
 
     return result

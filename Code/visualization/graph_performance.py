@@ -120,4 +120,5 @@ def graph_annual_growth_rate(
     )
 
     plt.tight_layout(rect=[0, 0, 0.85, 1])  # leave space on right for legend
-    plt.show()
+    plt.savefig('etf_risk_return.png')
+    plt.close()

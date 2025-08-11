@@ -1,20 +1,22 @@
 import sys
 import os
-# Add project root to sys.path for imports to work
-# Corrected path to add the 'Code' directory to the system path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-# Reverted to absolute imports, which work with the sys.path modification
-from testing.compare_custom_Sharpe_test_results import quantitative_etf_basket_comparison
-from testing.recommendation_test import recommendation_test
-
-from core.user.user_profile import getUserProfile
-from core.data_processing.ishares_ETF_list import download_valid_data
-from core.data_processing.risk_free_rates import fetch_risk_free_boc
-
-from datetime import datetime
 import itertools
 import pandas as pd
+from datetime import datetime
+
+# Add project root to sys.path for imports to work
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from config.constants import (
+    TESTING_PERIOD, RECOMMENDATION_COUNT, TOP_RANGE_RECOMMENDATIONS
+)
+from core.data_processing.ishares_ETF_list import download_valid_data
+from core.analysis.max_drawdown import calculate_max_drawdown
+from core.data_processing.Etf_Data import get_etf_data
+from core.data_processing.risk_free_rates import fetch_risk_free_boc
+from core.scoring.etf_recommendation_evaluation import top_recommend
+from core.scoring.custom_score import utility_score
+from testing.recommendation_test import recommendation_test
+from core.scoring.sharpe_recommendation import sharpe_score
 
 # Constants for index access
 USER_TIME_HORIZON = 0
@@ -28,13 +30,11 @@ USER_RISK_PREFERENCE = 5
 def generate_all_user_tests():
     valid_tickers, data = download_valid_data()
     end_date = pd.Timestamp(datetime.now())
-    test_period = 1
-    test_start = end_date - pd.DateOffset(years=test_period)
 
-    time_horizons = [10]
+    time_horizons = [1, 8, 25]
     growths = [2, 21]
     stds = [5, 35]
-    max_drawdowns = [15, 35, 100]
+    max_drawdowns = [15, 25, 35, 45, 100]
     min_etf_ages = [3]
     risk_preferences = [[3, 1], [1, 1], [1, 3]]
 
@@ -45,64 +45,96 @@ def generate_all_user_tests():
         print(f"Processing combo: {combo}")
 
         try:
-            # Get recommended tickers
+            # Full-time recommendations - direct calc method
+            md_tolerable_list = calculate_max_drawdown(
+                user[USER_WORST_CASE], user[USER_MINIMUM_ETF_AGE] + TESTING_PERIOD, valid_tickers, data, end_date
+            )
+            etf_metrics_full_time = get_etf_data(md_tolerable_list, user[USER_TIME_HORIZON] + TESTING_PERIOD, data, end_date)
+            risk_free_data = fetch_risk_free_boc("1995-01-01")
+
+            utility_scores = utility_score(etf_metrics_full_time, user[USER_TIME_HORIZON] + TESTING_PERIOD, risk_free_data, user[USER_RISK_PREFERENCE])
+            sharpe_scores = sharpe_score(etf_metrics_full_time, user[USER_TIME_HORIZON] + TESTING_PERIOD, risk_free_data)
+
+            # Get top RECOMMENDATION_COUNT (e.g., 5) recommendations for full-time
+            full_time_custom_df = top_recommend(utility_scores, 'Utility_Score', RECOMMENDATION_COUNT)
+            full_time_sharpe_df = top_recommend(sharpe_scores, 'Sharpe', RECOMMENDATION_COUNT)
+            full_time_custom_list = full_time_custom_df['Ticker'].tolist()
+            full_time_sharpe_list = full_time_sharpe_df['Ticker'].tolist()
+
+            # Get TOP_RANGE_RECOMMENDATIONS (e.g., 10) recommendations for full-time for comparison
+            full_time_custom_top_range_df = top_recommend(utility_scores, 'Utility_Score', TOP_RANGE_RECOMMENDATIONS)
+            full_time_sharpe_top_range_df = top_recommend(sharpe_scores, 'Sharpe', TOP_RANGE_RECOMMENDATIONS)
+            full_time_custom_top_range_list = full_time_custom_top_range_df['Ticker'].tolist()
+            full_time_sharpe_top_range_list = full_time_sharpe_top_range_df['Ticker'].tolist()
+
+            if not full_time_custom_list or not full_time_sharpe_list:
+                print(f"Skipping combo {combo} due to empty full-time recommendations.")
+                continue
+
+            # Test period recommendations via recommendation_test
             custom_list, sharpe_list = recommendation_test(
                 user[USER_TIME_HORIZON], user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION],
                 user[USER_WORST_CASE], user[USER_MINIMUM_ETF_AGE], user[USER_RISK_PREFERENCE],
-                valid_tickers, data, test_period
+                valid_tickers, data, TESTING_PERIOD
             )
-
-            print(f"Custom recommended ETFs ({len(custom_list)}): {custom_list}")
-            print(f"Sharpe recommended ETFs ({len(sharpe_list)}): {sharpe_list}")
 
             if not custom_list or not sharpe_list:
-                print("Skipping due to empty recommendation list")
+                print(f"Skipping combo {combo} due to empty test period recommendations.")
                 continue
 
-            # Get performance metrics
-            risk_free_data = fetch_risk_free_boc("1995-01-01")
-            result_df = quantitative_etf_basket_comparison(
-                data, custom_list, sharpe_list,
-                user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION],
-                test_start, end_date, risk_free_data['yield_pct'].mean()
-            )
+            # Sets for overlap calculations
+            set_full_custom = set(full_time_custom_list)
+            set_full_sharpe = set(full_time_sharpe_list)
+            set_full_custom_top_range = set(full_time_custom_top_range_list)
+            set_full_sharpe_top_range = set(full_time_sharpe_top_range_list)
+            set_test_custom = set(custom_list)
+            set_test_sharpe = set(sharpe_list)
 
-            if 'Sharpe' not in result_df.index or 'Custom' not in result_df.index:
-                print("Skipping due to missing Sharpe or Custom in results")
-                continue
+            # Counts of overlaps
+            overlap_full_custom_sharpe = len(set_full_custom & set_full_sharpe)
+            overlap_test_custom_sharpe = len(set_test_custom & set_test_sharpe)
+            overlap_full_test_custom = len(set_full_custom & set_test_custom)
+            overlap_full_test_sharpe = len(set_full_sharpe & set_test_sharpe)
+            
+            # New columns: Test period recommendations vs. Full-time top 10
+            custom_test_in_custom_full_top_range = len(set_test_custom & set_full_custom_top_range)
+            sharpe_test_in_sharpe_full_top_range = len(set_test_sharpe & set_full_sharpe_top_range)
 
-            # Extract overlap info from Custom row (same for both methods)
-            overlap_info = {
-                "Unique Custom ETFs": ', '.join(map(str, result_df.loc['Custom', 'Unique Custom ETFs'])),
-                "Unique Sharpe ETFs": ', '.join(map(str, result_df.loc['Custom', 'Unique Sharpe ETFs'])),
-                "Overlapping ETFs": ', '.join(map(str, result_df.loc['Custom', 'Overlapping ETFs'])),
-                "Overlap Count": result_df.loc['Custom', 'Overlap Count']
-            }
+            # Intersections as comma-separated strings (sorted)
+            intersection_custom_test_sharpe_test = ', '.join(sorted(set_test_custom & set_test_sharpe))
+            intersection_custom_full_test = ', '.join(sorted(set_full_custom & set_test_custom))
+            intersection_sharpe_full_test = ', '.join(sorted(set_full_sharpe & set_test_sharpe))
 
-            # Flatten Sharpe & Custom metrics
-            sharpe_metrics = {f"Sharpe_{col}": result_df.loc['Sharpe', col] for col in result_df.columns if col not in overlap_info}
-            custom_metrics = {f"Custom_{col}": result_df.loc['Custom', col] for col in result_df.columns if col not in overlap_info}
+            # Convert ticker lists to comma-separated strings for output
+            custom_full_time_tickers = ', '.join(full_time_custom_list)
+            custom_test_time_tickers = ', '.join(custom_list)
+            sharpe_full_time_tickers = ', '.join(full_time_sharpe_list)
+            sharpe_test_time_tickers = ', '.join(sharpe_list)
 
-            # Ensure list-like metrics inside Sharpe/Custom are stringified
-            for metrics in (sharpe_metrics, custom_metrics):
-                for k, v in metrics.items():
-                    if isinstance(v, (list, set)):
-                        metrics[k] = ', '.join(map(str, v))
-
-            # Combine all into one row
-            combined_row = {
+            # Build final row
+            row = {
                 "time_horizon": user[USER_TIME_HORIZON],
                 "growth": user[USER_DESIRED_GROWTH],
                 "fluctuation": user[USER_FLUCTUATION],
                 "max_drawdown": user[USER_WORST_CASE],
                 "min_etf_age": user[USER_MINIMUM_ETF_AGE],
                 "risk_preference": user[USER_RISK_PREFERENCE],
+                "overlap_full_custom_sharpe": overlap_full_custom_sharpe,
+                "overlap_test_custom_sharpe": overlap_test_custom_sharpe,
+                "overlap_full_test_custom": overlap_full_test_custom,
+                "overlap_full_test_sharpe": overlap_full_test_sharpe,
+                "custom_test_in_custom_full_top_range": custom_test_in_custom_full_top_range,
+                "sharpe_test_in_sharpe_full_top_range": sharpe_test_in_sharpe_full_top_range,
+                "custom_full_time_tickers": custom_full_time_tickers,
+                "custom_test_time_tickers": custom_test_time_tickers,
+                "sharpe_full_time_tickers": sharpe_full_time_tickers,
+                "sharpe_test_time_tickers": sharpe_test_time_tickers,
+                "intersection_custom_test_sharpe_test": intersection_custom_test_sharpe_test,
+                "intersection_custom_full_test": intersection_custom_full_test,
+                "intersection_sharpe_full_test": intersection_sharpe_full_test,
             }
-            combined_row.update(sharpe_metrics)
-            combined_row.update(custom_metrics)
-            combined_row.update(overlap_info)
 
-            rows.append(combined_row)
+            rows.append(row)
 
         except Exception as e:
             print(f"Failed on combo {combo}: {e}")
@@ -113,7 +145,7 @@ def generate_all_user_tests():
         return None
 
     df = pd.DataFrame(rows)
-    df.to_excel('~/Desktop/all_users_etf_sharpe_custom_compare_full.xlsx', index=False)
+    df.to_excel('~/Desktop/all_users_etf_overlap_and_tickers_3yr_test_with_top_10.xlsx', index=False)
     print(f"Saved results with {len(df)} rows to Excel.")
     return df
 

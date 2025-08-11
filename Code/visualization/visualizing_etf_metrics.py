@@ -89,4 +89,5 @@ def plot_risk_return_user(
 
     # Adjust layout to fit legend on right and user profile below
     plt.tight_layout(rect=[0, 0.15, 0.85, 1])  # less bottom padding for profile box, right for legend
-    plt.show()
+    plt.savefig('etf_risk_return.png')
+    plt.close() 
