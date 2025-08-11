@@ -35,7 +35,7 @@ def generate_all_user_tests():
     growths = [2, 21]
     stds = [5, 35]
     max_drawdowns = [15, 25, 35, 45, 100]
-    min_etf_ages = [0, 3, 10]
+    min_etf_ages = [0,3,10]
     risk_preferences = [[3, 1], [1, 1], [1, 3]]
 
     rows = []
@@ -45,34 +45,54 @@ def generate_all_user_tests():
         print(f"Processing combo: {combo}")
 
         try:
+            full_time_horizon = user[USER_TIME_HORIZON] + TESTING_PERIOD
+            
             # Full-time recommendations - direct calc method
             md_tolerable_list = calculate_max_drawdown(
                 user[USER_WORST_CASE], user[USER_MINIMUM_ETF_AGE] + TESTING_PERIOD, valid_tickers, data, end_date
             )
-            etf_metrics_full_time = get_etf_data(md_tolerable_list, user[USER_TIME_HORIZON] + TESTING_PERIOD, data, end_date)
+            etf_metrics_full_time = get_etf_data(md_tolerable_list, full_time_horizon, data, end_date)
             risk_free_data = fetch_risk_free_boc("1995-01-01")
 
-            utility_scores = utility_score(etf_metrics_full_time, user[USER_TIME_HORIZON] + TESTING_PERIOD, risk_free_data, user[USER_RISK_PREFERENCE])
-            sharpe_scores = sharpe_score(etf_metrics_full_time, user[USER_TIME_HORIZON] + TESTING_PERIOD, risk_free_data)
-
-            # Get top RECOMMENDATION_COUNT (e.g., 5) recommendations for full-time
-            full_time_custom_df = top_recommend(utility_scores, 'Utility_Score', RECOMMENDATION_COUNT)
-            full_time_sharpe_df = top_recommend(sharpe_scores, 'Sharpe', RECOMMENDATION_COUNT)
-            full_time_custom_list = full_time_custom_df['Ticker'].tolist()
-            full_time_sharpe_list = full_time_sharpe_df['Ticker'].tolist()
-
-            # Get TOP_RANGE_RECOMMENDATIONS (e.g., 15) recommendations for full-time for comparison
-            full_time_custom_top_range_df = top_recommend(utility_scores, 'Utility_Score', TOP_RANGE_RECOMMENDATIONS)
-            full_time_sharpe_top_range_df = top_recommend(sharpe_scores, 'Sharpe', TOP_RANGE_RECOMMENDATIONS)
-            full_time_custom_top_range_list = full_time_custom_top_range_df['Ticker'].tolist()
-            full_time_sharpe_top_range_list = full_time_sharpe_top_range_df['Ticker'].tolist()
-
-            if not full_time_custom_list or not full_time_sharpe_list:
-                print(f"Skipping combo {combo} due to empty full-time recommendations.")
+            # Handle case where no ETFs meet the criteria for the full period
+            if etf_metrics_full_time.empty:
+                print(f"Skipping combo {combo} due to empty full-time metrics.")
                 continue
 
+            utility_scores = utility_score(etf_metrics_full_time, full_time_horizon, risk_free_data, user[USER_RISK_PREFERENCE])
+            sharpe_scores = sharpe_score(etf_metrics_full_time, full_time_horizon, risk_free_data)
+
+            full_time_custom_df = top_recommend(utility_scores, 'Utility_Score', RECOMMENDATION_COUNT)
+            full_time_sharpe_df = top_recommend(sharpe_scores, 'Sharpe', RECOMMENDATION_COUNT)
+            
+            if full_time_custom_df.empty or full_time_sharpe_df.empty:
+                print(f"Skipping combo {combo} due to empty full-time recommendations.")
+                continue
+            
+            # Dynamically construct column names based on the full_time_horizon
+            annual_growth_col_full = f"Annual_Growth_{full_time_horizon}Y"
+            std_dev_col_full = f"Standard_Deviation_{full_time_horizon}Y"
+
+            full_time_custom_metrics = {
+                "Annual Return (%)": full_time_custom_df[annual_growth_col_full].mean(),
+                "Volatility (%)": full_time_custom_df[std_dev_col_full].mean()
+            }
+            full_time_sharpe_metrics = {
+                "Annual Return (%)": full_time_sharpe_df[annual_growth_col_full].mean(),
+                "Volatility (%)": full_time_sharpe_df[std_dev_col_full].mean()
+            }
+            
+            full_time_custom_list = full_time_custom_df['Ticker'].tolist()
+            full_time_sharpe_list = full_time_sharpe_df['Ticker'].tolist()
+            
+            full_time_custom_top_range_df = top_recommend(utility_scores, 'Utility_Score', TOP_RANGE_RECOMMENDATIONS)
+            full_time_sharpe_top_range_df = top_recommend(sharpe_scores, 'Sharpe', TOP_RANGE_RECOMMENDATIONS)
+
+            full_time_custom_top_range_list = full_time_custom_top_range_df['Ticker'].tolist() if not full_time_custom_top_range_df.empty else []
+            full_time_sharpe_top_range_list = full_time_sharpe_top_range_df['Ticker'].tolist() if not full_time_sharpe_top_range_df.empty else []
+
             # Test period recommendations via recommendation_test
-            custom_list, sharpe_list = recommendation_test(
+            custom_list, sharpe_list, custom_metrics, sharpe_metrics = recommendation_test(
                 user[USER_TIME_HORIZON], user[USER_DESIRED_GROWTH], user[USER_FLUCTUATION],
                 user[USER_WORST_CASE], user[USER_MINIMUM_ETF_AGE], user[USER_RISK_PREFERENCE],
                 valid_tickers, data, TESTING_PERIOD
@@ -82,7 +102,6 @@ def generate_all_user_tests():
                 print(f"Skipping combo {combo} due to empty test period recommendations.")
                 continue
 
-            # Sets for overlap calculations
             set_full_custom = set(full_time_custom_list)
             set_full_sharpe = set(full_time_sharpe_list)
             set_full_custom_top_range = set(full_time_custom_top_range_list)
@@ -90,32 +109,26 @@ def generate_all_user_tests():
             set_test_custom = set(custom_list)
             set_test_sharpe = set(sharpe_list)
 
-            # Counts of overlaps
             overlap_full_custom_sharpe = len(set_full_custom & set_full_sharpe)
             overlap_test_custom_sharpe = len(set_test_custom & set_test_sharpe)
             overlap_full_test_custom = len(set_full_custom & set_test_custom)
             overlap_full_test_sharpe = len(set_full_sharpe & set_test_sharpe)
             
-            # New columns: Test period recommendations vs. Full-time top 15
             custom_test_in_custom_full_top_range = len(set_test_custom & set_full_custom_top_range)
             sharpe_test_in_sharpe_full_top_range = len(set_test_sharpe & set_full_sharpe_top_range)
 
-            # Intersections as comma-separated strings (sorted)
             intersection_custom_test_sharpe_test = ', '.join(sorted(set_test_custom & set_test_sharpe))
             intersection_custom_full_test = ', '.join(sorted(set_full_custom & set_test_custom))
             intersection_sharpe_full_test = ', '.join(sorted(set_full_sharpe & set_test_sharpe))
 
-            # Convert ticker lists to comma-separated strings for output
             custom_full_time_tickers = ', '.join(full_time_custom_list)
             custom_test_time_tickers = ', '.join(custom_list)
             sharpe_full_time_tickers = ', '.join(full_time_sharpe_list)
             sharpe_test_time_tickers = ', '.join(sharpe_list)
             
-            # New columns for the top 15 lists
             custom_full_time_top_15 = ', '.join(full_time_custom_top_range_list)
             sharpe_full_time_top_15 = ', '.join(full_time_sharpe_top_range_list)
 
-            # Build final row
             row = {
                 "time_horizon": user[USER_TIME_HORIZON],
                 "growth": user[USER_DESIRED_GROWTH],
@@ -123,6 +136,14 @@ def generate_all_user_tests():
                 "max_drawdown": user[USER_WORST_CASE],
                 "min_etf_age": user[USER_MINIMUM_ETF_AGE],
                 "risk_preference": user[USER_RISK_PREFERENCE],
+                "custom_full_time_annual_return": full_time_custom_metrics['Annual Return (%)'],
+                "custom_full_time_volatility": full_time_custom_metrics['Volatility (%)'],
+                "sharpe_full_time_annual_return": full_time_sharpe_metrics['Annual Return (%)'],
+                "sharpe_full_time_volatility": full_time_sharpe_metrics['Volatility (%)'],
+                "custom_test_annual_return": custom_metrics['Annual Return (%)'],
+                "custom_test_volatility": custom_metrics['Volatility (%)'],
+                "sharpe_test_annual_return": sharpe_metrics['Annual Return (%)'],
+                "sharpe_test_volatility": sharpe_metrics['Volatility (%)'],
                 "overlap_full_custom_sharpe": overlap_full_custom_sharpe,
                 "overlap_test_custom_sharpe": overlap_test_custom_sharpe,
                 "overlap_full_test_custom": overlap_full_test_custom,
@@ -132,7 +153,7 @@ def generate_all_user_tests():
                 "custom_full_time_tickers": custom_full_time_tickers,
                 "custom_test_time_tickers": custom_test_time_tickers,
                 "sharpe_full_time_tickers": sharpe_full_time_tickers,
-                "sharpe_test_time_tickers": sharpe_test_time_tickers,
+                "sharpe_test_time_tickers": sharpe_full_time_tickers,
                 "custom_full_time_top_15": custom_full_time_top_15,
                 "sharpe_full_time_top_15": sharpe_full_time_top_15,
                 "intersection_custom_test_sharpe_test": intersection_custom_test_sharpe_test,
@@ -148,10 +169,9 @@ def generate_all_user_tests():
 
     if not rows:
         print("No valid data rows collected to write to Excel.")
-        return None
-
+        return NoneMin
     df = pd.DataFrame(rows)
-    df.to_excel('~/Desktop/all_users_etf_overlap_and_tickers_1yr_test_with_top_15.xlsx', index=False)
+    df.to_excel('~/Desktop/all_users_etf_3yr_test.xlsx', index=False)
     print(f"Saved results with {len(df)} rows to Excel.")
     return df
 

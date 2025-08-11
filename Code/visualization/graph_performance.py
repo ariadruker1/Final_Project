@@ -24,8 +24,8 @@ def graph_annual_growth_rate(
     plt.figure(figsize=(14, 7))
 
     # Plot shaded std deviation area
-    plt.fill_between(dates, user_growth_pct - 2, user_growth_pct + 2,
-                     color='green', alpha=0.15, label="User Ideal Growth")
+    plt.fill_between(dates, user_growth_pct - 0.05 , user_growth_pct + 0.05,
+                     color='green', label="User Ideal Growth")
 
     # Combine and determine colors for ETFs
     all_etfs = set(custom_recommend_list) | set(sharpe_recommend_list)
