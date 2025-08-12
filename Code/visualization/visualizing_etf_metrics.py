@@ -105,20 +105,21 @@ def plot_risk_return_user(
         ticker = row['Ticker']
         plt.text(x, y + y_offsets[i], ticker, fontsize=8, ha='left', va='center')
 
-    # Create an inset axes below the plot for user profile
-    # Move it closer by shifting bottom position up and reducing height
-    inset_ax = plt.axes([0.1, 0.12, 0.75, 0.1])  # closer to plot, smaller height
-    inset_ax.axis('off')  # hide axes
-
+    # Place the user profile text directly in a box at the top-left of the chart
     profile_text = (
-        f"User Profile:    Horizon: {time_horizon}y    Growth Goal: {user_growth}%    Std Dev: ±{user_std}%    "
-        f"Max Drawdown: {user_max_drawdown}%    Min ETF Age: {user_min_etf_age}y    "
+        f"User Profile:\n"
+        f"Horizon: {time_horizon}y\n"
+        f"Growth Goal: {user_growth}%\n"
+        f"Std Dev: ±{user_std}%\n"
+        f"Max Drawdown: {user_max_drawdown}%\n"
+        f"Min ETF Age: {user_min_etf_age}y\n"
         f"Risk (Return:Risk): {user_risk_ratio[1]}:{user_risk_ratio[0]}"
     )
-    inset_ax.text(0.01, 0.5, profile_text, fontsize=10, va='center', ha='left',
-              bbox=dict(boxstyle="round,pad=0.5", facecolor="whitesmoke", edgecolor="gray", alpha=0.9))
+    plt.text(0.01, 0.98, profile_text, transform=plt.gca().transAxes,
+             fontsize=10, va='top', ha='left',
+             bbox=dict(boxstyle="round,pad=0.5", facecolor="whitesmoke", edgecolor="gray", alpha=0.9))
 
-    # Adjust layout to fit legend on right and user profile below
-    plt.tight_layout(rect=[0, 0.15, 0.85, 1])  # less bottom padding for profile box, right for legend
+    # Adjust layout to fit legend on right
+    plt.tight_layout(rect=[0, 0, 0.85, 1])
     plt.savefig('user_etf_risk_return.png')
-    plt.close() 
+    plt.close()
